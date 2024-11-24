@@ -1,0 +1,2 @@
+version,device name,recording epoch time,recording time,recording timezone,platform,appVersion,device id,sensors,sampleRateMs,standardisation
+3,SM-N960W,1731543236819,2024-11-13_00-13-56,America/Toronto,android,1.39.0,49908674-a410-4301-8d11-a034f145a31c,Accelerometer|Location|Annotation|TotalAcceleration|AccelerometerUncalibrated,10|0||10|10,false

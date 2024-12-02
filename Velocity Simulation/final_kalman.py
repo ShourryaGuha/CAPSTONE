@@ -101,48 +101,96 @@ accel_data = accelerometer_df.iloc[:, 4:1:-1].values
 # Initialize timestamps to column 1
 timestamps = accelerometer_df.iloc[:, 1].values[:-1]  # Use one less point
 
-# Calculate velocity using the extracted acceleration data and timestamps
 velocity = calculate_velocity_with_timestamps(accel_data, accelerometer_df.iloc[:, 1].values)
 speed = np.linalg.norm(velocity, axis=1)  # Speed magnitude at each time step
 
 # Apply Kalman filter
 kf_timestamps, filtered_speeds = kalman_filter_speed(location_df, accelerometer_df)
 
-# Create subplots
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(12, 16))
-
 # Original GPS speed plot
-ax1.plot(location_df[location_df.columns[1]], location_df[location_df.columns[6]], label='speed')
-ax1.set_xlabel('Unix Timestamp')
-ax1.set_ylabel('Speed')
-ax1.legend()
-ax1.set_title('Speed from Location.csv')
-
-# Integrated accelerometer speed plot
-ax3.plot(timestamps, speed, label='Speed')
-ax3.set_xlabel(accelerometer_df.columns[0])
-ax3.set_ylabel('Speed')
-ax3.legend()
-ax3.set_title('Speed from Integrated Accelerometer Data')
-
-# Raw accelerometer data plot
-for column in accelerometer_df.columns[2:5]:
-    ax4.plot(accelerometer_df[accelerometer_df.columns[0]], 
-             accelerometer_df[column], label=column)
-ax4.set_xlabel(accelerometer_df.columns[0])
-ax4.set_ylabel('Acceleration')
-ax4.legend()
-ax4.set_title('Accelerometer Data from Accelerometer.csv')
-
-# Kalman filtered speed plot
-ax2.plot(kf_timestamps, filtered_speeds, 'r-', label='Kalman Filtered Speed')
-ax2.plot(location_df[location_df.columns[1]], 
-    location_df[location_df.columns[6]], 
-     'b.', alpha=0.3, label='GPS Speed')
-ax2.set_xlabel('Unix Timestamp')
-ax2.set_ylabel('Speed')
-ax2.legend()
-ax2.set_title('Kalman Filtered Speed vs GPS Speed')
-
+plt.figure(figsize=(12, 4))
+plt.plot(location_df[location_df.columns[1]], location_df[location_df.columns[6]], label='speed')
+plt.xlabel('Unix Timestamp')
+plt.ylabel('Speed')
+plt.legend()
+plt.title('GPS speed plot vs time')
 plt.tight_layout()
 plt.show()
+
+# Integrated accelerometer speed plot
+plt.figure(figsize=(12, 4))
+plt.plot(timestamps, speed, label='Speed')
+plt.xlabel(accelerometer_df.columns[0])
+plt.ylabel('Speed')
+plt.legend()
+plt.title('Speed from Integrated Accelerometer Data')
+plt.tight_layout()
+plt.show()
+
+# Raw accelerometer data plot
+plt.figure(figsize=(12, 4))
+for column in accelerometer_df.columns[2:5]:
+    plt.plot(accelerometer_df[accelerometer_df.columns[0]], accelerometer_df[column], label=column)
+plt.xlabel(accelerometer_df.columns[0])
+plt.ylabel('Acceleration')
+plt.legend()
+plt.title('Accelerometer Data from Accelerometer.csv')
+plt.tight_layout()
+plt.show()
+
+# Kalman filtered speed plot
+plt.figure(figsize=(12, 4))
+plt.plot(kf_timestamps, filtered_speeds, 'r-', label='Kalman Filtered Speed')
+plt.plot(location_df[location_df.columns[1]], location_df[location_df.columns[6]], 'b.', alpha=0.3, label='GPS Speed')
+plt.xlabel('Unix Timestamp')
+plt.ylabel('Speed')
+plt.legend()
+plt.title('Kalman Filtered Speed vs GPS Speed')
+plt.tight_layout()
+plt.show()
+
+# Calculate velocity using the extracted acceleration data and timestamps
+# velocity = calculate_velocity_with_timestamps(accel_data, accelerometer_df.iloc[:, 1].values)
+# speed = np.linalg.norm(velocity, axis=1)  # Speed magnitude at each time step
+
+# # Apply Kalman filter
+# kf_timestamps, filtered_speeds = kalman_filter_speed(location_df, accelerometer_df)
+
+# # Create subplots
+# fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(12, 16))
+
+# # Original GPS speed plot
+# ax1.plot(location_df[location_df.columns[1]], location_df[location_df.columns[6]], label='speed')
+# ax1.set_xlabel('Unix Timestamp')
+# ax1.set_ylabel('Speed')
+# ax1.legend()
+# ax1.set_title('Speed from Location.csv')
+
+# # Integrated accelerometer speed plot
+# ax3.plot(timestamps, speed, label='Speed')
+# ax3.set_xlabel(accelerometer_df.columns[0])
+# ax3.set_ylabel('Speed')
+# ax3.legend()
+# ax3.set_title('Speed from Integrated Accelerometer Data')
+
+# # Raw accelerometer data plot
+# for column in accelerometer_df.columns[2:5]:
+#     ax4.plot(accelerometer_df[accelerometer_df.columns[0]], 
+#              accelerometer_df[column], label=column)
+# ax4.set_xlabel(accelerometer_df.columns[0])
+# ax4.set_ylabel('Acceleration')
+# ax4.legend()
+# ax4.set_title('Accelerometer Data from Accelerometer.csv')
+
+# # Kalman filtered speed plot
+# ax2.plot(kf_timestamps, filtered_speeds, 'r-', label='Kalman Filtered Speed')
+# ax2.plot(location_df[location_df.columns[1]], 
+#     location_df[location_df.columns[6]], 
+#      'b.', alpha=0.3, label='GPS Speed')
+# ax2.set_xlabel('Unix Timestamp')
+# ax2.set_ylabel('Speed')
+# ax2.legend()
+# ax2.set_title('Kalman Filtered Speed vs GPS Speed')
+
+# plt.tight_layout()
+# plt.show()

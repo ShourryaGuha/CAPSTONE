@@ -41,3 +41,7 @@ And if you want to transfer a file to local:
 scp -r shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/ CAPSTONE/
 
 Otherwise, please just use the github repo
+
+-------BUILDING AND RUNNING C FILES----------
+You MUST modify the makefile. In the drivers folder, you must add << add_library(drivers gps.c) >>
+or similar in order to run your new laser TOF library or whatever

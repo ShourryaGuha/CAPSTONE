@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <pigpio.h>
 
+// relevant pigpio api: https://abyz.me.uk/rpi/pigpio/cif.html#gpioSerialRead
+
 #define GPS_BAUD_RATE 9600
 #define GPS_UART_PORT 1
 #define QUEUE_SIZE 500
@@ -76,9 +78,10 @@ void init_gps_data(GPSData *data) {
 int read_gps_data(char *buffer, size_t buffer_size) {
     int bytesRead = 0;
     int i = 0;
+    char c;
     while (bytesRead < buffer_size - 1) {
-        char c = gpioSerialRead(GPS_UART_PORT);
-        if (c == -1) break;
+        if (gpioSerialRead(GPS_UART_PORT, &c, 256) == -1) 
+            break;
         buffer[i++] = c;
         bytesRead++;
         usleep(10000);
@@ -110,7 +113,7 @@ void gps_init() {
         fprintf(stderr, "pigpio initialization failed.\n");
         return;
     }
-    if (gpioSerialOpen(GPS_UART_PORT, GPS_BAUD_RATE, 0) < 0) {
+    if (gpioSerialReadOpen(GPS_UART_PORT, GPS_BAUD_RATE, 8) < 0) {
         fprintf(stderr, "Failed to open UART for GPS\n");
         gpioTerminate();
         return;
@@ -135,16 +138,16 @@ void test_read() {
 }
 
 void terminate_connection() {
-    gpioSerialClose(GPS_UART_PORT);
+    gpioSerialReadClose(GPS_UART_PORT);
     gpioTerminate();
 }
 
-int main() {
-    gps_init();
-    while(1) {
-        test_read();
-        usleep(10000);
-    }
-    terminate_connection();
-    return 0;
-}
+// int main() {
+//     gps_init();
+//     while(1) {
+//         test_read();
+//         usleep(10000);
+//     }
+//     terminate_connection();
+//     return 0;
+// }

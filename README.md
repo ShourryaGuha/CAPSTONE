@@ -29,3 +29,15 @@ for example:
 ssh-copy-id -i id_ed25519.pub shourryag@192.168.91.50
 
 This will allow you to work from the same computer without always having to put in a password. 
+
+---------FILE TRANSFER------------
+If you want to manually transfer files for some reason, like you want to do a quick test, or whatever:
+To the remote host (the rpi) from local:
+
+scp -r CAPSTONE/ shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/
+
+And if you want to transfer a file to local:
+
+scp -r shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/ CAPSTONE/
+
+Otherwise, please just use the github repo

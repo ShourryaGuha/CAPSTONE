@@ -111,10 +111,12 @@ void print_gps_data(const GPSData *data) {
 void gps_init() {
     if (gpioInitialise() < 0) {
         fprintf(stderr, "pigpio initialization failed.\n");
+        exit(EXIT_FAILURE);
         return;
     }
     if (gpioSerialReadOpen(GPS_UART_PORT, GPS_BAUD_RATE, 8) < 0) {
         fprintf(stderr, "Failed to open UART for GPS\n");
+        exit(EXIT_FAILURE);
         gpioTerminate();
         return;
     }

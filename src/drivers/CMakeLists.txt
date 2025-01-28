@@ -1,5 +1,5 @@
 # executable target
-add_executable(main src/main.c)
+add_executable(main main.c)
 
 # Add the library target for the drivers
 add_library(drivers gps.c)

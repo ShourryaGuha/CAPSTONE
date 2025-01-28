@@ -10,5 +10,5 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 
 # Add subdirectories to build
 add_subdirectory(src/drivers)
-add_subdirectory(src/kalman_filter)
-add_subdirectory(src/kinematics)
+# add_subdirectory(src/kalman_filter)
+# add_subdirectory(src/kinematics)

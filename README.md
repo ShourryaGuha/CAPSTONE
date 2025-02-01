@@ -78,17 +78,29 @@ scp -r shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/ CAPSTONE/
    ```
    *(Located in the build folder.)*
 
-### **Deprecated Method (If using CMake)**
+### **Building & Running (Using CMake in a Separate Build Directory)**
+If you want to keep your build files separate:
+1. **Create and navigate to a build directory:**
+   ```sh
+   mkdir build && cd build
+   ```
+2. **Run CMake to configure the project:**
+   ```sh
+   cmake ..
+   ```
+3. **Build the project:**
+   ```sh
+   make
+   ```
+4. **Run the compiled executable:**
+   ```sh
+   sudo ./main
+   ```
+
+### **Deprecated Method (If using CMake in the same directory)**
 If modifying the `Makefile` (e.g., adding a new driver like `gps.c`), update it as follows:
 ```makefile
 add_library(drivers gps.c)
-```
-Then, run:
-```sh
-make clean   # Only if a full rebuild is needed
-cmake .      # Only if Makefile was modified
-make
-sudo ./main
 ```
 
 ---

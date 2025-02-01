@@ -7,8 +7,19 @@ Hostname: bombsite.local (this isn't always working, ip address is consistently 
 Username: shourryag
 Password: mte482@caps
 
+------How to SSH into RPI using VS code------
 
-------How to SSH into RPI------
+1. Download and install Visual Studio Code from https://code.visualstudio.com/.
+2. Open Visual Studio Code.
+3. Install the Remote Development extension pack from the Visual Studio Code marketplace: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack.
+4. Press `Ctrl+Shift+P` to open the command palette.
+5. Type and select "Remote-SSH: Connect to Host...".
+6. Select "Add New SSH Host..."
+7. Enter the SSH connection string: `shourryag@bombsite.local`.
+8. If prompted, enter the password: `mte482@caps`.
+9. Once connected, you can open a terminal in Visual Studio Code and start working on the Raspberry Pi.
+
+------How to SSH into RPI standard way------
 NOTE: You need to be connected to the SAME network, or at least have a vpn so that you have the same IP (192.168.91.50)
 ssh does not work from different networks by default. Need to enable port forwarding on connected router,
 and since it's my phone's mobile hotspot, I'm not sure that it's possible. 
@@ -19,7 +30,7 @@ ssh shourryag@192.168.91.50
 OR
 ssh shourryag@bombsite.local
 
-answer yes to the prompt << Are you sure you want to continue connecting (yes/no/[fingerprint])? >>
+answer yes to the prompt << Are you sure you want to continue connecting (yes/no/[fingerprint])?>>
 Then type in the password on prompt
 
 then, in a new terminal, navigate to ~/.ssh/ (or wherever your ssh keys are stored) and type in:

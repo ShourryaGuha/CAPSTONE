@@ -44,4 +44,9 @@ Otherwise, please just use the github repo
 
 -------BUILDING AND RUNNING C FILES----------
 You MUST modify the makefile. In the drivers folder, you must add << add_library(drivers gps.c) >>
-or similar in order to run your new laser TOF library or whatever
+or similar in order to run your new laser TOF library or whatever.
+
+1. << make clean >> (optional, do not do this every time, only if you want to build everything new.)
+2. << cmake . >> (optional, only do this if you add to the makefile)
+3. << make >>
+4. << sudo ./main >> (will be located in the build folder)

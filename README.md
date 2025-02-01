@@ -1,65 +1,100 @@
-# CAPSTONE
+# CAPSTONE 2025 - Raspberry Pi Setup and Development Guide
 
-For uwaterloo capstone 2025. 
+## Raspberry Pi SSH Access
 
-------Raspberry pi login details-----
-Hostname: bombsite.local (this isn't always working, ip address is consistently 192.168.91.50)
-Username: shourryag
-Password: mte482@caps
+### Login Details
+- **Hostname:** `bombsite.local` (may not always work)
+- **IP Address:** `192.168.91.50` (consistent)
+- **Username:** `shourryag`
+- **Password:** `mte482@caps`
 
-------How to SSH into RPI using VS code------
+### SSH Access via VS Code
+1. Install [Visual Studio Code](https://code.visualstudio.com/).
+2. Open VS Code and install the [Remote Development Extension Pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
+3. Open the command palette (`Ctrl+Shift+P`) and select **Remote-SSH: Connect to Host...**.
+4. Click **Add New SSH Host...** and enter:
+   ```sh
+   shourryag@bombsite.local
+   ```
+5. If prompted, enter the password: `mte482@caps`.
+6. Once connected, open a terminal in VS Code to start working.
 
-1. Download and install Visual Studio Code from https://code.visualstudio.com/.
-2. Open Visual Studio Code.
-3. Install the Remote Development extension pack from the Visual Studio Code marketplace: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack.
-4. Press `Ctrl+Shift+P` to open the command palette.
-5. Type and select "Remote-SSH: Connect to Host...".
-6. Select "Add New SSH Host..."
-7. Enter the SSH connection string: `shourryag@bombsite.local`.
-8. If prompted, enter the password: `mte482@caps`.
-9. Once connected, you can open a terminal in Visual Studio Code and start working on the Raspberry Pi.
+### SSH Access via Terminal
+**Prerequisite:** Ensure you are on the same network or use a VPN.
 
-------How to SSH into RPI standard way------
-NOTE: You need to be connected to the SAME network, or at least have a vpn so that you have the same IP (192.168.91.50)
-ssh does not work from different networks by default. Need to enable port forwarding on connected router,
-and since it's my phone's mobile hotspot, I'm not sure that it's possible. 
+1. Open a terminal (Git Bash recommended on Windows).
+2. Connect using one of the following commands:
+   ```sh
+   ssh shourryag@192.168.91.50
+   ```
+   or
+   ```sh
+   ssh shourryag@bombsite.local
+   ```
+3. Accept the SSH fingerprint by typing **yes** when prompted.
+4. Enter the password when prompted.
 
-Now, open a git bash terminal:
+#### Setting Up SSH Key Authentication
+To avoid entering a password every time:
+1. Navigate to your SSH key directory (`~/.ssh/` or equivalent).
+2. Copy your SSH key to the Raspberry Pi:
+   ```sh
+   ssh-copy-id -i id_ed25519.pub shourryag@192.168.91.50
+   ```
 
-ssh shourryag@192.168.91.50
-OR
-ssh shourryag@bombsite.local
+---
 
-answer yes to the prompt << Are you sure you want to continue connecting (yes/no/[fingerprint])?>>
-Then type in the password on prompt
+## File Transfer
 
-then, in a new terminal, navigate to ~/.ssh/ (or wherever your ssh keys are stored) and type in:
-
-ssh-copy-id -i <<ssh public filename>> shourryag@192.168.91.50
-for example:
-ssh-copy-id -i id_ed25519.pub shourryag@192.168.91.50
-
-This will allow you to work from the same computer without always having to put in a password. 
-
----------FILE TRANSFER------------
-If you want to manually transfer files for some reason, like you want to do a quick test, or whatever:
-To the remote host (the rpi) from local:
-
+### Transfer Files to Raspberry Pi (Remote Host)
+```sh
 scp -r CAPSTONE/ shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/
+```
 
-And if you want to transfer a file to local:
-
+### Transfer Files from Raspberry Pi to Local Machine
+```sh
 scp -r shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/ CAPSTONE/
+```
 
-Otherwise, please just use the github repo
+**Note:** Use the GitHub repository for version-controlled changes instead of manual file transfers.
 
--------BUILDING AND RUNNING C FILES----------
+---
 
-## deprecated
-You MUST modify the makefile. In the drivers folder, you must add << add_library(drivers gps.c) >>
-or similar in order to run your new laser TOF library or whatever.
+## Building and Running C Files
 
-1. << make clean >> (optional, do not do this every time, only if you want to build everything new.)
-2. << cmake . >> (optional, only do this if you add to the makefile)
-3. << make >>
-4. << sudo ./main >> (will be located in the build folder)
+### **Building & Running (Current Method)**
+1. **Clean (optional):**
+   ```sh
+   make clean
+   ```
+   *(Only if you want to rebuild everything from scratch.)*
+2. **Compile:**
+   ```sh
+   make
+   ```
+3. **Run:**
+   ```sh
+   sudo ./main
+   ```
+   *(Located in the build folder.)*
+
+### **Deprecated Method (If using CMake)**
+If modifying the `Makefile` (e.g., adding a new driver like `gps.c`), update it as follows:
+```makefile
+add_library(drivers gps.c)
+```
+Then, run:
+```sh
+make clean   # Only if a full rebuild is needed
+cmake .      # Only if Makefile was modified
+make
+sudo ./main
+```
+
+---
+
+## Notes
+- Ensure you are on the same network as the Raspberry Pi.
+- Port forwarding may be required for external SSH access but may not be possible on a mobile hotspot.
+- Use GitHub for proper version control instead of manual file transfers where possible.
+

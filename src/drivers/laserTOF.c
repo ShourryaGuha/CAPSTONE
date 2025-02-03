@@ -54,20 +54,23 @@ int Laser_Init(Laser_Device *device) {
         return;
     }
 
+    // Not needed, power cycle done in hardware
+
     // Configure pins
     //https://abyz.me.uk/rpi/pigpio/cif.html#gpioSetMode
-    gpioSetMode(PIN_PWREN, PI_OUTPUT);
+    // gpioSetMode(PIN_PWREN, PI_OUTPUT);
     
-    // Power up sequence section 6.2
-    gpioWrite(PIN_PWREN, 0);  // Power down first
-    usleep(10000);            // Wait 10ms
-    gpioWrite(PIN_PWREN, 1);  // Power up
-    usleep(100000);           // Wait 100ms for boot
+    // // Power up sequence section 6.2
+    // gpioWrite(PIN_PWREN, 0);  // Power down first
+    // usleep(10000);            // Wait 10ms
+    // gpioWrite(PIN_PWREN, 1);  // Power up
+    // usleep(100000);           // Wait 100ms for boot
     
     // Open UART
     // serOpen: https://abyz.me.uk/rpi/pigpio/cif.html#serOpen
     // returns a device handle which is just an integer, not sure how that works but hopefully it does
     // this device handle is then used for all other serial operations
+    // might have to change /dev/ttyAMA0 accroding to this https://jason19970210.medium.com/raspberry-pi-4-with-multiple-uart-interface-4eac75f74d7c
     device->handle = serOpen("/dev/ttyAMA0", BAUD_RATE, 0);
     if (device->handle < 0) {
         gpioTerminate();

@@ -1,52 +1,115 @@
-# CAPSTONE
+# CAPSTONE 2025 - Raspberry Pi Setup and Development Guide
 
-For uwaterloo capstone 2025. 
+## Raspberry Pi SSH Access
 
-------Raspberry pi login details-----
-Hostname: bombsite.local (this isn't always working, ip address is consistently 192.168.91.50)
-Username: shourryag
-Password: mte482@caps
+### Login Details
+- **Hostname:** `bombsite.local` (may not always work)
+- **IP Address:** `192.168.91.50` (consistent for Cameron's phone)
+- **Username:** `shourryag`
+- **Password:** `mte482@caps`
 
+### Add another wifi to the rpi (not required)
+https://www.thedigitalpictureframe.com/how-to-add-a-second-wifi-network-to-your-raspberry-pi/
 
-------How to SSH into RPI------
-NOTE: You need to be connected to the SAME network, or at least have a vpn so that you have the same IP (192.168.91.50)
-ssh does not work from different networks by default. Need to enable port forwarding on connected router,
-and since it's my phone's mobile hotspot, I'm not sure that it's possible. 
+### SSH Access via VS Code
+1. Install [Visual Studio Code](https://code.visualstudio.com/).
+2. Open VS Code and install the [Remote Development Extension Pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
+3. Open the command palette (`Ctrl+Shift+P`) and select **Remote-SSH: Connect to Host...**.
+4. Click **Add New SSH Host...** and enter:
+   ```sh
+   shourryag@bombsite.local
+   ```
+5. If prompted, enter the password: `mte482@caps`.
+6. Once connected, open a terminal in VS Code to start working.
 
-Now, open a git bash terminal:
+### SSH Access via Terminal
+**Prerequisite:** Ensure you are on the same network or use a VPN.
 
-ssh shourryag@192.168.91.50
-OR
-ssh shourryag@bombsite.local
+1. Open a terminal (Git Bash recommended on Windows).
+2. Connect using one of the following commands:
+   ```sh
+   ssh shourryag@192.168.91.50
+   ```
+   or
+   ```sh
+   ssh shourryag@bombsite.local
+   ```
+3. Accept the SSH fingerprint by typing **yes** when prompted.
+4. Enter the password when prompted.
 
-answer yes to the prompt << Are you sure you want to continue connecting (yes/no/[fingerprint])? >>
-Then type in the password on prompt
+#### Setting Up SSH Key Authentication
+To avoid entering a password every time:
+1. Navigate to your SSH key directory (`~/.ssh/` or equivalent).
+2. Copy your SSH key to the Raspberry Pi:
+   ```sh
+   ssh-copy-id -i id_ed25519.pub shourryag@192.168.91.50
+   ```
 
-then, in a new terminal, navigate to ~/.ssh/ (or wherever your ssh keys are stored) and type in:
+---
 
-ssh-copy-id -i <<ssh public filename>> shourryag@192.168.91.50
-for example:
-ssh-copy-id -i id_ed25519.pub shourryag@192.168.91.50
+## File Transfer
 
-This will allow you to work from the same computer without always having to put in a password. 
-
----------FILE TRANSFER------------
-If you want to manually transfer files for some reason, like you want to do a quick test, or whatever:
-To the remote host (the rpi) from local:
-
+### Transfer Files to Raspberry Pi (Remote Host)
+```sh
 scp -r CAPSTONE/ shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/
+```
 
-And if you want to transfer a file to local:
-
+### Transfer Files from Raspberry Pi to Local Machine
+```sh
 scp -r shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/ CAPSTONE/
+```
 
-Otherwise, please just use the github repo
+**Note:** Use the GitHub repository for version-controlled changes instead of manual file transfers.
 
--------BUILDING AND RUNNING C FILES----------
-You MUST modify the makefile. In the drivers folder, you must add << add_library(drivers gps.c) >>
-or similar in order to run your new laser TOF library or whatever.
+---
 
-1. << make clean >> (optional, do not do this every time, only if you want to build everything new.)
-2. << cmake . >> (optional, only do this if you add to the makefile)
-3. << make >>
-4. << sudo ./main >> (will be located in the build folder)
+## Building and Running C Files
+
+### **Building & Running (Current Method)**
+1. **Clean (optional):**
+   ```sh
+   make clean
+   ```
+   *(Only if you want to rebuild everything from scratch.)*
+2. **Compile:**
+   ```sh
+   make
+   ```
+3. **Run:**
+   ```sh
+   sudo ./main
+   ```
+   *(Located in the build folder.)*
+
+### **Building & Running (Using CMake in a Separate Build Directory)**
+If you want to keep your build files separate:
+1. **Create and navigate to a build directory:**
+   ```sh
+   mkdir build && cd build
+   ```
+2. **Run CMake to configure the project:**
+   ```sh
+   cmake ..
+   ```
+3. **Build the project:**
+   ```sh
+   make
+   ```
+4. **Run the compiled executable:**
+   ```sh
+   sudo ./main
+   ```
+
+### **Deprecated Method (If using CMake in the same directory)**
+If modifying the `Makefile` (e.g., adding a new driver like `gps.c`), update it as follows:
+```makefile
+add_library(drivers gps.c)
+```
+
+---
+
+## Notes
+- Ensure you are on the same network as the Raspberry Pi.
+- Port forwarding may be required for external SSH access but may not be possible on a mobile hotspot.
+- Use GitHub for proper version control instead of manual file transfers where possible.
+

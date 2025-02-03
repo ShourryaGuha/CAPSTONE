@@ -6,6 +6,22 @@
 #include <termios.h>
 #include <errno.h>
 
+/*
+NMEA0183 V4.1 Protocol used by GROVE GPS 350
+
+https://en.wikipedia.org/wiki/NMEA_0183
+
+GGA: time, location, num of satellites
+GSA: GPS receiver operating mode, satellites used for positioning, DOP (Dilution of precision) value, positioning status
+GSV: visible GPS satellite information, elevation angle, azimuth angle, signal-to-noise ratio
+RMC: time, data, location, speed
+VTG: ground speed information
+
+
+
+*/
+
+
 #define GPS_BAUD_RATE B9600
 #define UART_DEVICE "/dev/serial0"
 #define QUEUE_SIZE 500

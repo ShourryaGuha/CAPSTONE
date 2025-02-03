@@ -4,9 +4,12 @@
 
 ### Login Details
 - **Hostname:** `bombsite.local` (may not always work)
-- **IP Address:** `192.168.91.50` (consistent)
+- **IP Address:** `192.168.91.50` (consistent for Cameron's phone)
 - **Username:** `shourryag`
 - **Password:** `mte482@caps`
+
+### Add another wifi to the rpi (not required)
+https://www.thedigitalpictureframe.com/how-to-add-a-second-wifi-network-to-your-raspberry-pi/
 
 ### SSH Access via VS Code
 1. Install [Visual Studio Code](https://code.visualstudio.com/).

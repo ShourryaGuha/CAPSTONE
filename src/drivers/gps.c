@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <pigpio.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <errno.h>
 
-// relevant pigpio api: https://abyz.me.uk/rpi/pigpio/cif.html#gpioSerialRead
-
-#define GPS_BAUD_RATE 9600
-#define GPS_UART_PORT 1
+#define GPS_BAUD_RATE B9600
+#define UART_DEVICE "/dev/serial0"
 #define QUEUE_SIZE 500
+#define GPS_BUFFER_SIZE 64
 
 typedef struct {
     double latitude;
@@ -32,8 +33,14 @@ typedef struct {
 
 static CircularQueue queue;
 static GPSData gps_data;
-static char buffer[256];
+static char buffer[GPS_BUFFER_SIZE];
+static int uart_fd = -1;
 
+void parse_gps_data(GPSData* input, char* buffer){
+    return;
+}
+
+// Queue functions remain unchanged
 void init_queue() {
     queue.head = 0;
     queue.tail = 0;
@@ -59,73 +66,80 @@ GPSData* dequeue() {
     return &data;
 }
 
-void print_queue() {
-    int current = queue.head;
-    for (int i = 0; i < queue.count; i++) {
-        printf("State %d: Lat: %.6f, Lon: %.6f, Height: %.2f\n",
-               i + 1, queue.data[current].latitude,
-               queue.data[current].longitude,
-               queue.data[current].height);
-        current = (current + 1) % QUEUE_SIZE;
-    }
-    printf("\n");
-}
-
 void init_gps_data(GPSData *data) {
     memset(data, 0, sizeof(GPSData));
 }
 
 int read_gps_data(char *buffer, size_t buffer_size) {
-    int bytesRead = 0;
-    int i = 0;
-    char c;
-    while (bytesRead < buffer_size - 1) {
-        if (gpioSerialRead(GPS_UART_PORT, &c, 256) == -1) 
-            break;
-        buffer[i++] = c;
-        bytesRead++;
-        usleep(10000);
+    int bytesRead = read(uart_fd, buffer, buffer_size - 1);
+    if (bytesRead < 0) {
+        //fprintf(stderr, "Error reading from UART: %s\n", strerror(errno));
+        return -1;
     }
-    buffer[i] = '\0';
+    buffer[bytesRead] = '\0'; // Null-terminate the buffer
     return bytesRead;
 }
 
-void parse_gps_data(GPSData *data, const char *str) {
-    data->latitude = 37.7749;
-    data->longitude = -122.4194;
-    data->utc_time = 123456.78;
-}
-
-void print_gps_data(const GPSData *data) {
-    printf("GPS Data:\n");
-    printf("Latitude: %.6f\n", data->latitude);
-    printf("Longitude: %.6f\n", data->longitude);
-    printf("Height: %.2f m\n", data->height);
-    printf("UTC Time: %.2f\n", data->utc_time);
-    printf("Velocity: [X: %.2f, Y: %.2f, Z: %.2f] m/s\n",
-           data->velocity_x, data->velocity_y, data->velocity_z);
-    printf("Acceleration: [X: %.2f, Y: %.2f, Z: %.2f] m/s²\n",
-           data->accel_x, data->accel_y, data->accel_z);
-}
-
 void gps_init() {
-    if (gpioInitialise() < 0) {
-        fprintf(stderr, "pigpio initialization failed.\n");
+    // Open UART device
+    uart_fd = open(UART_DEVICE, O_RDWR | O_NOCTTY | O_NDELAY);
+    if (uart_fd < 0) {
+        fprintf(stderr, "Error opening %s: %s\n", UART_DEVICE, strerror(errno));
         exit(EXIT_FAILURE);
-        return;
     }
-    if (gpioSerialReadOpen(GPS_UART_PORT, GPS_BAUD_RATE, 8) < 0) {
-        fprintf(stderr, "Failed to open UART for GPS\n");
+
+    // Configure UART
+    struct termios uart_config;
+    memset(&uart_config, 0, sizeof(uart_config));
+
+    // Get current configuration
+    if (tcgetattr(uart_fd, &uart_config) != 0) {
+        fprintf(stderr, "Error getting UART configuration: %s\n", strerror(errno));
+        close(uart_fd);
         exit(EXIT_FAILURE);
-        gpioTerminate();
-        return;
     }
+
+    // Set baud rate
+    cfsetispeed(&uart_config, GPS_BAUD_RATE);
+    cfsetospeed(&uart_config, GPS_BAUD_RATE);
+
+    // Set 8N1 (8 bits, no parity, 1 stop bit)
+    uart_config.c_cflag &= ~PARENB;  // No parity
+    uart_config.c_cflag &= ~CSTOPB;  // 1 stop bit
+    uart_config.c_cflag &= ~CSIZE;   // Clear size bits
+    uart_config.c_cflag |= CS8;      // 8 bits
+    uart_config.c_cflag |= CREAD | CLOCAL; // Enable receiver, ignore modem controls
+
+    // Set input mode (non-canonical, no echo,...)
+    uart_config.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+    uart_config.c_iflag &= ~(IXON | IXOFF | IXANY); // Disable software flow control
+    uart_config.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL);
+
+    // Set output mode
+    uart_config.c_oflag &= ~OPOST;
+
+    // Set read timeout
+    uart_config.c_cc[VMIN] = 0;
+    uart_config.c_cc[VTIME] = 10; // 1 second timeout
+
+    // Apply configuration
+    if (tcsetattr(uart_fd, TCSANOW, &uart_config) != 0) {
+        fprintf(stderr, "Error setting UART configuration: %s\n", strerror(errno));
+        close(uart_fd);
+        exit(EXIT_FAILURE);
+    }
+
+    // Clear input buffer
+    tcflush(uart_fd, TCIFLUSH);
+
+    printf("Opened UART device: %s at baud rate: %d\n", UART_DEVICE, B9600);
+    
     init_gps_data(&gps_data);
     init_queue();
 }
 
 void spin() {
-    int bytesRead = read_gps_data(buffer, sizeof(buffer));
+    int bytesRead = read_gps_data(buffer, GPS_BUFFER_SIZE);
     if (bytesRead > 0) {
         parse_gps_data(&gps_data, buffer);
         enqueue(&gps_data);
@@ -133,23 +147,15 @@ void spin() {
 }
 
 void test_read() {
-    int bytesRead = read_gps_data(buffer, sizeof(buffer));
+    int bytesRead = read_gps_data(buffer, GPS_BUFFER_SIZE);
     if (bytesRead > 0) {
-        print_gps_data(&gps_data);
+        printf("%d bytes read\n%s\n", bytesRead, buffer);
     }
 }
 
 void terminate_connection() {
-    gpioSerialReadClose(GPS_UART_PORT);
-    gpioTerminate();
+    if (uart_fd >= 0) {
+        close(uart_fd);
+        uart_fd = -1;
+    }
 }
-
-// int main() {
-//     gps_init();
-//     while(1) {
-//         test_read();
-//         usleep(10000);
-//     }
-//     terminate_connection();
-//     return 0;
-// }

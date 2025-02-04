@@ -71,7 +71,7 @@ int Laser_Init(Laser_Device *device) {
     // returns a device handle which is just an integer, not sure how that works but hopefully it does
     // this device handle is then used for all other serial operations
     // might have to change /dev/ttyAMA0 accroding to this https://jason19970210.medium.com/raspberry-pi-4-with-multiple-uart-interface-4eac75f74d7c
-    device->handle = serOpen("/dev/ttyAMA0", BAUD_RATE, 0);
+    device->handle = serOpen("/dev/ttyAMA2", BAUD_RATE, 0);
     if (device->handle < 0) {
         gpioTerminate();
         fprintf(stderr, "Failed to receive laser uart handle.\n");
@@ -116,6 +116,7 @@ int Laser_Measure(Laser_Device *device, Laser_Mode mode, float *distance) {
     };
     
     cmd[9] = calculate_checksum(&cmd[2], 7);
+    
     
     // Send command
     serWrite(device->handle, cmd, sizeof(cmd));

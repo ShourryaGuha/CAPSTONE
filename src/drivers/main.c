@@ -1,18 +1,16 @@
 #include <stdio.h>
 #include <unistd.h>
-#include "gps.h"
+//#include "gps.h"
+#include "imu.c"
 
 int main() {
-    // Placeholder for now
-    printf("I look forward to the war crimes that will commence shortly\n");
+    mpu6050_init();
 
-    gps_init();
-    while(1) {
-        test_read();
+    while (1) {
+        spin();
         usleep(10000);
     }
-    terminate_connection();
-    return 0;
 
+    terminate_imu_connection();
     return 0;
 }

@@ -1,4 +1,4 @@
-# Install script for directory: /home/shourryag/Documents/CAPSTONE/src/drivers
+# Install script for directory: /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/src/drivers
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

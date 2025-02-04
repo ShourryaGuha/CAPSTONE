@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/main.dir/src/drivers/main.c.o -o main  src/drivers/libdrivers.a src/drivers/libdrivers.a -lm -lpigpio -lm 

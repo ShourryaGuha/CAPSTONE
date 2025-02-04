@@ -1,5 +1,5 @@
-src/drivers/CMakeFiles/main.dir/main.c.o: \
- /home/shourryag/Documents/CAPSTONE/src/drivers/main.c \
+CMakeFiles/main.dir/src/drivers/main.c.o: \
+ /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/main.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/aarch64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -22,4 +22,15 @@ src/drivers/CMakeFiles/main.dir/main.c.o: \
  /usr/include/aarch64-linux-gnu/bits/types/struct_FILE.h \
  /usr/include/aarch64-linux-gnu/bits/stdio_lim.h \
  /usr/include/aarch64-linux-gnu/bits/floatn.h \
- /usr/include/aarch64-linux-gnu/bits/floatn-common.h
+ /usr/include/aarch64-linux-gnu/bits/floatn-common.h \
+ /usr/include/unistd.h /usr/include/aarch64-linux-gnu/bits/posix_opt.h \
+ /usr/include/aarch64-linux-gnu/bits/environments.h \
+ /usr/include/aarch64-linux-gnu/bits/confname.h \
+ /usr/include/aarch64-linux-gnu/bits/getopt_posix.h \
+ /usr/include/aarch64-linux-gnu/bits/getopt_core.h \
+ /usr/include/aarch64-linux-gnu/bits/unistd_ext.h \
+ /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/gps.h \
+ /usr/lib/gcc/aarch64-linux-gnu/12/include/stdint.h /usr/include/stdint.h \
+ /usr/include/aarch64-linux-gnu/bits/wchar.h \
+ /usr/include/aarch64-linux-gnu/bits/stdint-intn.h \
+ /usr/include/aarch64-linux-gnu/bits/stdint-uintn.h

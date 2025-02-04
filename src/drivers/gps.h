@@ -38,8 +38,9 @@ void gps_init(void);
 int read_gps_data(char *buffer, size_t buffer_size);
 void parse_gps_data(GPSData *data, const char *str);
 void print_gps_data(const GPSData *data);
-void spin(void);
+void spin_gps(void);
 void test_read(void);
 void terminate_connection(void);
+void test_final_values(void);
 
 #endif // GPS_H

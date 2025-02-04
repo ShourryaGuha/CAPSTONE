@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
+#include <math.h>
+#include <time.h>
 
 /*
 NMEA0183 V4.1 Protocol used by GROVE GPS 350
@@ -17,15 +19,31 @@ GSV: visible GPS satellite information, elevation angle, azimuth angle, signal-t
 RMC: time, data, location, speed
 VTG: ground speed information
 
-
-
 */
 
-
+//reading serial
 #define GPS_BAUD_RATE B9600
 #define UART_DEVICE "/dev/serial0"
 #define QUEUE_SIZE 500
 #define GPS_BUFFER_SIZE 64
+
+//velocity calculations
+#define KNOTS_TO_MPS 0.514444
+#define EARTH_RADIUS 6371000.0  // Earth radius in meters
+#define MIN_SATELLITES_FOR_FIX 4 //3 for each dimension, 1 more for error checking
+#ifndef M_PI
+#   define M_PI 3.1415926535897932384626433832
+#endif
+
+
+// Structure to store previous measurements for acceleration calculation
+static struct {
+    double prev_vel_x;
+    double prev_vel_y;
+    double prev_vel_z;
+    double prev_time;
+    int initialized;
+} prev_state = {0, 0, 0, 0, 0};
 
 typedef struct {
     double latitude;
@@ -52,11 +70,150 @@ static GPSData gps_data;
 static char buffer[GPS_BUFFER_SIZE];
 static int uart_fd = -1;
 
-void parse_gps_data(GPSData* input, char* buffer){
-    return;
+
+// Helper function to convert NMEA coordinate format to decimal degrees
+double nmea_to_decimal(const char* coord, char dir) {
+    if (!coord[0]) return 0.0;  // Empty field
+    
+    double degrees = atof(coord) / 100.0;
+    double minutes = degrees - floor(degrees);
+    degrees = floor(degrees);
+    double decimal = degrees + (minutes * 100.0) / 60.0;
+    
+    return (dir == 'S' || dir == 'W') ? -decimal : decimal;
 }
 
-// Queue functions remain unchanged
+// Convert HHMMSS.ss to seconds since midnight
+double parse_utc_time(const char* time_str) {
+    if (!time_str[0]) return 0.0;  // Empty field
+    
+    int hours = (time_str[0] - '0') * 10 + (time_str[1] - '0');
+    int minutes = (time_str[2] - '0') * 10 + (time_str[3] - '0');
+    double seconds = atof(time_str + 4);
+    
+    return hours * 3600.0 + minutes * 60.0 + seconds;
+}
+
+void find_velocity(GPSData* data, double speed_knots, double course) {
+    // Convert speed from knots to m/s and course to radians
+    double speed_ms = speed_knots * KNOTS_TO_MPS;
+    double course_rad = course * M_PI / 180.0;
+    
+    // Calculate velocity components
+    data->velocity_x = speed_ms * sin(course_rad);  // East component
+    data->velocity_y = speed_ms * cos(course_rad);  // North component
+    data->velocity_z = 0.0;  // Assuming no vertical velocity from GPS
+}
+
+void find_acceleration(GPSData* data) {
+    if (!prev_state.initialized) {
+        prev_state.prev_vel_x = data->velocity_x;
+        prev_state.prev_vel_y = data->velocity_y;
+        prev_state.prev_vel_z = data->velocity_z;
+        prev_state.prev_time = data->utc_time;
+        prev_state.initialized = 1;
+        return;
+    }
+    
+    double dt = data->utc_time - prev_state.prev_time;
+    if (dt > 0) {
+        // Calculate acceleration components
+        data->accel_x = (data->velocity_x - prev_state.prev_vel_x) / dt;
+        data->accel_y = (data->velocity_y - prev_state.prev_vel_y) / dt;
+        data->accel_z = (data->velocity_z - prev_state.prev_vel_z) / dt;
+        
+        // Update previous state
+        prev_state.prev_vel_x = data->velocity_x;
+        prev_state.prev_vel_y = data->velocity_y;
+        prev_state.prev_vel_z = data->velocity_z;
+        prev_state.prev_time = data->utc_time;
+    }
+}
+
+void parse_gps_data(GPSData* data, char* buffer) {
+    char* line = strtok(buffer, "\n");
+    double speed_knots = 0.0;
+    double course = 0.0;
+    int satellites = 0;
+    int fix_quality = 0;
+    int rmc_valid = 0;  // Flag for RMC validity
+    
+    while (line != NULL) {
+        if (strncmp(line, "$GNGGA", 6) == 0 || strncmp(line, "$GPGGA", 6) == 0) {
+            char* field = strtok(line, ",");
+            int field_count = 0;
+            
+            while (field != NULL) {
+                switch(field_count) {
+                    case 1:  // UTC time
+                        data->utc_time = parse_utc_time(field);
+                        break;
+                    case 2:  // Latitude
+                        data->latitude = nmea_to_decimal(field, *(field + 12));
+                        break;
+                    case 4:  // Longitude
+                        data->longitude = nmea_to_decimal(field, *(field + 12));
+                        break;
+                    case 6:  // Fix quality
+                        fix_quality = field[0] ? atoi(field) : 0;
+                        break;
+                    case 7:  // Number of satellites
+                        satellites = field[0] ? atoi(field) : 0;
+                        break;
+                    case 9:  // Altitude
+                        data->height = field[0] ? atof(field) : 0.0;
+                        break;
+                }
+                field = strtok(NULL, ",");
+                field_count++;
+            }
+        }
+        else if (strncmp(line, "$GNRMC", 6) == 0 || strncmp(line, "$GPRMC", 6) == 0) {
+            char* field = strtok(line, ",");
+            int field_count = 0;
+            
+            while (field != NULL) {
+                switch(field_count) {
+                    case 2:  // Validity flag
+                        rmc_valid = (field[0] == 'A');  // 'A' for active, 'V' for void
+                        break;
+                    case 7:  // Speed in knots
+                        speed_knots = field[0] ? atof(field) : 0.0;
+                        break;
+                    case 8:  // Course over ground
+                        course = field[0] ? atof(field) : 0.0;
+                        break;
+                }
+                field = strtok(NULL, ",");
+                field_count++;
+            }
+        }
+        line = strtok(NULL, "\n");
+    }
+    
+    // Only process data if we have both a valid RMC fix and enough satellites
+    if (rmc_valid && fix_quality > 0 && satellites >= MIN_SATELLITES_FOR_FIX) {
+        find_velocity(data, speed_knots, course);
+        find_acceleration(data);
+    } else {
+        // If no valid fix, zero out all dynamic data
+        data->velocity_x = 0.0;
+        data->velocity_y = 0.0;
+        data->velocity_z = 0.0;
+        data->accel_x = 0.0;
+        data->accel_y = 0.0;
+        data->accel_z = 0.0;
+        
+        // Zero out position data as well since it's not reliable
+        data->latitude = 0.0;
+        data->longitude = 0.0;
+        data->height = 0.0;
+        
+        fprintf(stderr, "Invalid GPS fix - RMC Valid: %d, Fix Quality: %d, Satellites: %d\n",
+                rmc_valid, fix_quality, satellites);
+    }
+}
+
 void init_queue() {
     queue.head = 0;
     queue.tail = 0;
@@ -148,13 +305,13 @@ void gps_init() {
     // Clear input buffer
     tcflush(uart_fd, TCIFLUSH);
 
-    printf("Opened UART device: %s at baud rate: %d\n", UART_DEVICE, B9600);
+    printf("Opened UART device: %s at baud rate: %d\n", UART_DEVICE, 9600);
     
     init_gps_data(&gps_data);
     init_queue();
 }
 
-void spin() {
+void spin_gps() {
     int bytesRead = read_gps_data(buffer, GPS_BUFFER_SIZE);
     if (bytesRead > 0) {
         parse_gps_data(&gps_data, buffer);
@@ -167,6 +324,25 @@ void test_read() {
     if (bytesRead > 0) {
         printf("%d bytes read\n%s\n", bytesRead, buffer);
     }
+}
+
+void test_final_values(){
+    printf("GPS Data Values:\n");
+    printf("Position:\n");
+    printf("  Latitude:  %f°\n", gps_data.latitude);
+    printf("  Longitude: %f°\n", gps_data.longitude);
+    printf("  Height:    %f m\n", gps_data.height);
+    printf("\nTime:\n");
+    printf("  UTC Time:  %f seconds\n", gps_data.utc_time);
+    printf("\nVelocity (m/s):\n");
+    printf("  X: %f\n", gps_data.velocity_x);
+    printf("  Y: %f\n", gps_data.velocity_y);
+    printf("  Z: %f\n", gps_data.velocity_z);
+    printf("\nAcceleration (m/s²):\n");
+    printf("  X: %f\n", gps_data.accel_x);
+    printf("  Y: %f\n", gps_data.accel_y);
+    printf("  Z: %f\n", gps_data.accel_z);
+    printf("\n");
 }
 
 void terminate_connection() {

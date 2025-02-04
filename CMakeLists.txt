@@ -20,3 +20,8 @@ target_link_libraries(main PRIVATE drivers)
 
 # Include directories for the project
 target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR}/src/drivers)
+target_link_libraries(main 
+    PRIVATE 
+        drivers 
+        m
+)

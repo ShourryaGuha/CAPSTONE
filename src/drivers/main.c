@@ -8,8 +8,9 @@ int main() {
 
     gps_init();
     while(1) {
-        test_read();
+        spin_gps();
         usleep(10000);
+        test_final_values();
     }
     terminate_connection();
     return 0;

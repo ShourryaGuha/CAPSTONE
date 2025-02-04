@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/shourryag/Documents/CAPSTONE
+CMAKE_SOURCE_DIR = /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/shourryag/Documents/CAPSTONE/build
+CMAKE_BINARY_DIR = /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build
 
 # Include any dependencies generated for this target.
 include src/drivers/CMakeFiles/drivers.dir/depend.make
@@ -70,42 +70,58 @@ include src/drivers/CMakeFiles/drivers.dir/progress.make
 include src/drivers/CMakeFiles/drivers.dir/flags.make
 
 src/drivers/CMakeFiles/drivers.dir/gps.c.o: src/drivers/CMakeFiles/drivers.dir/flags.make
-src/drivers/CMakeFiles/drivers.dir/gps.c.o: /home/shourryag/Documents/CAPSTONE/src/drivers/gps.c
+src/drivers/CMakeFiles/drivers.dir/gps.c.o: /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/gps.c
 src/drivers/CMakeFiles/drivers.dir/gps.c.o: src/drivers/CMakeFiles/drivers.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/shourryag/Documents/CAPSTONE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/drivers/CMakeFiles/drivers.dir/gps.c.o"
-	cd /home/shourryag/Documents/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT src/drivers/CMakeFiles/drivers.dir/gps.c.o -MF CMakeFiles/drivers.dir/gps.c.o.d -o CMakeFiles/drivers.dir/gps.c.o -c /home/shourryag/Documents/CAPSTONE/src/drivers/gps.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object src/drivers/CMakeFiles/drivers.dir/gps.c.o"
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT src/drivers/CMakeFiles/drivers.dir/gps.c.o -MF CMakeFiles/drivers.dir/gps.c.o.d -o CMakeFiles/drivers.dir/gps.c.o -c /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/gps.c
 
 src/drivers/CMakeFiles/drivers.dir/gps.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/drivers.dir/gps.c.i"
-	cd /home/shourryag/Documents/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/shourryag/Documents/CAPSTONE/src/drivers/gps.c > CMakeFiles/drivers.dir/gps.c.i
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/gps.c > CMakeFiles/drivers.dir/gps.c.i
 
 src/drivers/CMakeFiles/drivers.dir/gps.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/drivers.dir/gps.c.s"
-	cd /home/shourryag/Documents/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/shourryag/Documents/CAPSTONE/src/drivers/gps.c -o CMakeFiles/drivers.dir/gps.c.s
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/gps.c -o CMakeFiles/drivers.dir/gps.c.s
+
+src/drivers/CMakeFiles/drivers.dir/main.c.o: src/drivers/CMakeFiles/drivers.dir/flags.make
+src/drivers/CMakeFiles/drivers.dir/main.c.o: /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/main.c
+src/drivers/CMakeFiles/drivers.dir/main.c.o: src/drivers/CMakeFiles/drivers.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object src/drivers/CMakeFiles/drivers.dir/main.c.o"
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT src/drivers/CMakeFiles/drivers.dir/main.c.o -MF CMakeFiles/drivers.dir/main.c.o.d -o CMakeFiles/drivers.dir/main.c.o -c /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/main.c
+
+src/drivers/CMakeFiles/drivers.dir/main.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/drivers.dir/main.c.i"
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/main.c > CMakeFiles/drivers.dir/main.c.i
+
+src/drivers/CMakeFiles/drivers.dir/main.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/drivers.dir/main.c.s"
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/main.c -o CMakeFiles/drivers.dir/main.c.s
 
 # Object files for target drivers
 drivers_OBJECTS = \
-"CMakeFiles/drivers.dir/gps.c.o"
+"CMakeFiles/drivers.dir/gps.c.o" \
+"CMakeFiles/drivers.dir/main.c.o"
 
 # External object files for target drivers
 drivers_EXTERNAL_OBJECTS =
 
 src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/gps.c.o
+src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/main.c.o
 src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/build.make
 src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/shourryag/Documents/CAPSTONE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking C static library libdrivers.a"
-	cd /home/shourryag/Documents/CAPSTONE/build/src/drivers && $(CMAKE_COMMAND) -P CMakeFiles/drivers.dir/cmake_clean_target.cmake
-	cd /home/shourryag/Documents/CAPSTONE/build/src/drivers && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/drivers.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking C static library libdrivers.a"
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && $(CMAKE_COMMAND) -P CMakeFiles/drivers.dir/cmake_clean_target.cmake
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/drivers.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 src/drivers/CMakeFiles/drivers.dir/build: src/drivers/libdrivers.a
 .PHONY : src/drivers/CMakeFiles/drivers.dir/build
 
 src/drivers/CMakeFiles/drivers.dir/clean:
-	cd /home/shourryag/Documents/CAPSTONE/build/src/drivers && $(CMAKE_COMMAND) -P CMakeFiles/drivers.dir/cmake_clean.cmake
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && $(CMAKE_COMMAND) -P CMakeFiles/drivers.dir/cmake_clean.cmake
 .PHONY : src/drivers/CMakeFiles/drivers.dir/clean
 
 src/drivers/CMakeFiles/drivers.dir/depend:
-	cd /home/shourryag/Documents/CAPSTONE/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/shourryag/Documents/CAPSTONE /home/shourryag/Documents/CAPSTONE/src/drivers /home/shourryag/Documents/CAPSTONE/build /home/shourryag/Documents/CAPSTONE/build/src/drivers /home/shourryag/Documents/CAPSTONE/build/src/drivers/CMakeFiles/drivers.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers/CMakeFiles/drivers.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : src/drivers/CMakeFiles/drivers.dir/depend
 

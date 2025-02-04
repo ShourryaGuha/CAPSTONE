@@ -1,5 +1,5 @@
 src/drivers/CMakeFiles/drivers.dir/gps.c.o: \
- /home/shourryag/Documents/CAPSTONE/src/drivers/gps.c \
+ /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/gps.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/aarch64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -57,18 +57,32 @@ src/drivers/CMakeFiles/drivers.dir/gps.c.o: \
  /usr/include/aarch64-linux-gnu/bits/confname.h \
  /usr/include/aarch64-linux-gnu/bits/getopt_posix.h \
  /usr/include/aarch64-linux-gnu/bits/getopt_core.h \
- /usr/include/aarch64-linux-gnu/bits/unistd_ext.h /usr/include/pigpio.h \
- /usr/lib/gcc/aarch64-linux-gnu/12/include/stdint.h /usr/include/stdint.h \
- /usr/include/aarch64-linux-gnu/bits/wchar.h \
- /usr/include/aarch64-linux-gnu/bits/stdint-uintn.h \
- /usr/include/pthread.h /usr/include/sched.h \
- /usr/include/aarch64-linux-gnu/bits/sched.h \
- /usr/include/aarch64-linux-gnu/bits/types/struct_sched_param.h \
- /usr/include/aarch64-linux-gnu/bits/cpu-set.h /usr/include/time.h \
+ /usr/include/aarch64-linux-gnu/bits/unistd_ext.h /usr/include/fcntl.h \
+ /usr/include/aarch64-linux-gnu/bits/fcntl.h \
+ /usr/include/aarch64-linux-gnu/bits/fcntl-linux.h \
+ /usr/include/aarch64-linux-gnu/bits/stat.h \
+ /usr/include/aarch64-linux-gnu/bits/struct_stat.h /usr/include/termios.h \
+ /usr/include/aarch64-linux-gnu/bits/termios.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-struct.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-c_cc.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-c_iflag.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-c_oflag.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-baud.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-c_cflag.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-c_lflag.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-tcflow.h \
+ /usr/include/aarch64-linux-gnu/bits/termios-misc.h \
+ /usr/include/aarch64-linux-gnu/sys/ttydefaults.h /usr/include/errno.h \
+ /usr/include/aarch64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
+ /usr/lib/linux/uapi/arm64/asm/errno.h /usr/include/asm-generic/errno.h \
+ /usr/include/asm-generic/errno-base.h /usr/include/math.h \
+ /usr/include/aarch64-linux-gnu/bits/math-vector.h \
+ /usr/include/aarch64-linux-gnu/bits/libm-simd-decl-stubs.h \
+ /usr/include/aarch64-linux-gnu/bits/flt-eval-method.h \
+ /usr/include/aarch64-linux-gnu/bits/fp-logb.h \
+ /usr/include/aarch64-linux-gnu/bits/fp-fast.h \
+ /usr/include/aarch64-linux-gnu/bits/mathcalls-helper-functions.h \
+ /usr/include/aarch64-linux-gnu/bits/mathcalls.h /usr/include/time.h \
  /usr/include/aarch64-linux-gnu/bits/time.h \
  /usr/include/aarch64-linux-gnu/bits/types/struct_tm.h \
- /usr/include/aarch64-linux-gnu/bits/types/struct_itimerspec.h \
- /usr/include/aarch64-linux-gnu/bits/setjmp.h \
- /usr/include/aarch64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
- /usr/include/aarch64-linux-gnu/bits/pthread_stack_min-dynamic.h \
- /usr/include/aarch64-linux-gnu/bits/pthread_stack_min.h
+ /usr/include/aarch64-linux-gnu/bits/types/struct_itimerspec.h

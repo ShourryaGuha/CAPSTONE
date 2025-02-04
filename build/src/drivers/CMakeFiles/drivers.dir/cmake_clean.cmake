@@ -1,6 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/drivers.dir/gps.c.o"
   "CMakeFiles/drivers.dir/gps.c.o.d"
+  "CMakeFiles/drivers.dir/main.c.o"
+  "CMakeFiles/drivers.dir/main.c.o.d"
   "libdrivers.a"
   "libdrivers.pdb"
 )

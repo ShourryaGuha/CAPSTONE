@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = 
 
-C_INCLUDES = 
+C_INCLUDES = -I/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers
 
 C_FLAGS = -std=gnu11
 

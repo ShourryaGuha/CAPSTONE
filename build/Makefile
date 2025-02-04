@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/shourryag/Documents/CAPSTONE
+CMAKE_SOURCE_DIR = /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/shourryag/Documents/CAPSTONE/build
+CMAKE_BINARY_DIR = /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/shourryag/Documents/CAPSTONE/build/CMakeFiles /home/shourryag/Documents/CAPSTONE/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/CMakeFiles /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/shourryag/Documents/CAPSTONE/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -126,7 +126,7 @@ main: cmake_check_build_system
 
 # fast build rule for target.
 main/fast:
-	$(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/main.dir/build.make src/drivers/CMakeFiles/main.dir/build
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
 .PHONY : main/fast
 
 #=============================================================================
@@ -142,6 +142,30 @@ drivers/fast:
 	$(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/build
 .PHONY : drivers/fast
 
+src/drivers/main.o: src/drivers/main.c.o
+.PHONY : src/drivers/main.o
+
+# target to build an object file
+src/drivers/main.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/drivers/main.c.o
+.PHONY : src/drivers/main.c.o
+
+src/drivers/main.i: src/drivers/main.c.i
+.PHONY : src/drivers/main.i
+
+# target to preprocess a source file
+src/drivers/main.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/drivers/main.c.i
+.PHONY : src/drivers/main.c.i
+
+src/drivers/main.s: src/drivers/main.c.s
+.PHONY : src/drivers/main.s
+
+# target to generate assembly for a file
+src/drivers/main.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/drivers/main.c.s
+.PHONY : src/drivers/main.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -152,6 +176,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... drivers"
 	@echo "... main"
+	@echo "... src/drivers/main.o"
+	@echo "... src/drivers/main.i"
+	@echo "... src/drivers/main.s"
 .PHONY : help
 
 

@@ -178,6 +178,30 @@ main.c.s:
 	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/main.c.s
 .PHONY : main.c.s
 
+servo_control.o: servo_control.c.o
+.PHONY : servo_control.o
+
+# target to build an object file
+servo_control.c.o:
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/servo_control.c.o
+.PHONY : servo_control.c.o
+
+servo_control.i: servo_control.c.i
+.PHONY : servo_control.i
+
+# target to preprocess a source file
+servo_control.c.i:
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/servo_control.c.i
+.PHONY : servo_control.c.i
+
+servo_control.s: servo_control.c.s
+.PHONY : servo_control.s
+
+# target to generate assembly for a file
+servo_control.c.s:
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/servo_control.c.s
+.PHONY : servo_control.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -193,6 +217,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... servo_control.o"
+	@echo "... servo_control.i"
+	@echo "... servo_control.s"
 .PHONY : help
 
 

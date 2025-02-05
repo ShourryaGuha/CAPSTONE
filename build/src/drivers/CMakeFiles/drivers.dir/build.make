@@ -111,11 +111,26 @@ src/drivers/CMakeFiles/drivers.dir/servo_control.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/drivers.dir/servo_control.c.s"
 	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/servo_control.c -o CMakeFiles/drivers.dir/servo_control.c.s
 
+src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o: src/drivers/CMakeFiles/drivers.dir/flags.make
+src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o: /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/solenoid_control.c
+src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o: src/drivers/CMakeFiles/drivers.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o"
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o -MF CMakeFiles/drivers.dir/solenoid_control.c.o.d -o CMakeFiles/drivers.dir/solenoid_control.c.o -c /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/solenoid_control.c
+
+src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/drivers.dir/solenoid_control.c.i"
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/solenoid_control.c > CMakeFiles/drivers.dir/solenoid_control.c.i
+
+src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/drivers.dir/solenoid_control.c.s"
+	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/solenoid_control.c -o CMakeFiles/drivers.dir/solenoid_control.c.s
+
 # Object files for target drivers
 drivers_OBJECTS = \
 "CMakeFiles/drivers.dir/gps.c.o" \
 "CMakeFiles/drivers.dir/main.c.o" \
-"CMakeFiles/drivers.dir/servo_control.c.o"
+"CMakeFiles/drivers.dir/servo_control.c.o" \
+"CMakeFiles/drivers.dir/solenoid_control.c.o"
 
 # External object files for target drivers
 drivers_EXTERNAL_OBJECTS =
@@ -123,9 +138,10 @@ drivers_EXTERNAL_OBJECTS =
 src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/gps.c.o
 src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/main.c.o
 src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/servo_control.c.o
+src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o
 src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/build.make
 src/drivers/libdrivers.a: src/drivers/CMakeFiles/drivers.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking C static library libdrivers.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C static library libdrivers.a"
 	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && $(CMAKE_COMMAND) -P CMakeFiles/drivers.dir/cmake_clean_target.cmake
 	cd /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/drivers.dir/link.txt --verbose=$(VERBOSE)
 

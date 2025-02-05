@@ -82,8 +82,39 @@ CMakeFiles/main.dir/src/drivers/main.c.o: /home/shourryag/Documents/CAMERON_DEV_
   /usr/include/linux/errno.h \
   /usr/lib/linux/uapi/arm64/asm/errno.h \
   /usr/include/asm-generic/errno.h \
-  /usr/include/asm-generic/errno-base.h
+  /usr/include/asm-generic/errno-base.h \
+  /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/solenoid_control.h \
+  /usr/include/pigpio.h \
+  /usr/include/pthread.h \
+  /usr/include/sched.h \
+  /usr/include/aarch64-linux-gnu/bits/sched.h \
+  /usr/include/aarch64-linux-gnu/bits/types/struct_sched_param.h \
+  /usr/include/aarch64-linux-gnu/bits/cpu-set.h \
+  /usr/include/time.h \
+  /usr/include/aarch64-linux-gnu/bits/time.h \
+  /usr/include/aarch64-linux-gnu/bits/types/struct_tm.h \
+  /usr/include/aarch64-linux-gnu/bits/types/struct_itimerspec.h \
+  /usr/include/aarch64-linux-gnu/bits/setjmp.h \
+  /usr/include/aarch64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
+  /usr/include/aarch64-linux-gnu/bits/pthread_stack_min-dynamic.h \
+  /usr/include/aarch64-linux-gnu/bits/pthread_stack_min.h
 
+
+/usr/include/aarch64-linux-gnu/bits/pthread_stack_min.h:
+
+/usr/include/aarch64-linux-gnu/bits/types/struct_tm.h:
+
+/usr/include/time.h:
+
+/usr/include/aarch64-linux-gnu/bits/cpu-set.h:
+
+/usr/include/aarch64-linux-gnu/bits/types/struct_sched_param.h:
+
+/usr/include/aarch64-linux-gnu/bits/pthread_stack_min-dynamic.h:
+
+/usr/include/aarch64-linux-gnu/bits/sched.h:
+
+/usr/include/pigpio.h:
 
 /usr/include/asm-generic/errno-base.h:
 
@@ -151,6 +182,8 @@ CMakeFiles/main.dir/src/drivers/main.c.o: /home/shourryag/Documents/CAMERON_DEV_
 
 /usr/include/aarch64-linux-gnu/bits/timesize.h:
 
+/usr/include/aarch64-linux-gnu/bits/time.h:
+
 /usr/include/aarch64-linux-gnu/bits/struct_stat.h:
 
 /usr/include/aarch64-linux-gnu/bits/time64.h:
@@ -162,6 +195,8 @@ CMakeFiles/main.dir/src/drivers/main.c.o: /home/shourryag/Documents/CAMERON_DEV_
 /usr/include/aarch64-linux-gnu/bits/types/timer_t.h:
 
 /usr/include/aarch64-linux-gnu/bits/posix_opt.h:
+
+/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/solenoid_control.h:
 
 /usr/include/aarch64-linux-gnu/bits/types/__locale_t.h:
 
@@ -181,11 +216,17 @@ CMakeFiles/main.dir/src/drivers/main.c.o: /home/shourryag/Documents/CAMERON_DEV_
 
 /usr/lib/gcc/aarch64-linux-gnu/12/include/stdint.h:
 
+/usr/include/sched.h:
+
 /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/main.c:
 
 /usr/include/aarch64-linux-gnu/bits/types/struct_timeval.h:
 
+/usr/include/pthread.h:
+
 /usr/include/aarch64-linux-gnu/bits/wordsize.h:
+
+/usr/include/aarch64-linux-gnu/bits/types/struct_itimerspec.h:
 
 /usr/include/aarch64-linux-gnu/bits/confname.h:
 
@@ -208,6 +249,8 @@ CMakeFiles/main.dir/src/drivers/main.c.o: /home/shourryag/Documents/CAMERON_DEV_
 /usr/include/stdint.h:
 
 /usr/include/aarch64-linux-gnu/bits/endian.h:
+
+/usr/include/aarch64-linux-gnu/bits/setjmp.h:
 
 /usr/include/aarch64-linux-gnu/bits/struct_rwlock.h:
 
@@ -246,5 +289,7 @@ CMakeFiles/main.dir/src/drivers/main.c.o: /home/shourryag/Documents/CAMERON_DEV_
 /usr/include/aarch64-linux-gnu/sys/cdefs.h:
 
 /usr/include/aarch64-linux-gnu/bits/uintn-identity.h:
+
+/usr/include/aarch64-linux-gnu/bits/types/struct___jmp_buf_tag.h:
 
 /usr/include/aarch64-linux-gnu/bits/types/__sigset_t.h:

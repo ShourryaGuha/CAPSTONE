@@ -2,10 +2,23 @@
 #include <unistd.h>
 #include "gps.h"
 #include "servo_control.h"
+#include "solenoid_control.h"
 
 int main() {
     // Placeholder for now
     printf("I look forward to the war crimes that will commence shortly\n");
+
+    // Initialize the solenoid
+    initializeSolenoid();
+
+    // Release the solenoid for 3 seconds
+    printf("Releasing solenoid...\n");
+    releaseSolenoid();
+    sleep(3);  // Wait for 3 seconds
+
+    // Re-engage the solenoid
+    printf("Engaging solenoid...\n");
+    engageSolenoid();
 
     // Initialize two servo motors
     servo_t servo1, servo2;
@@ -33,6 +46,8 @@ int main() {
     // Cleanup resources
     servo_cleanup(&servo1);
     servo_cleanup(&servo2);
+
+    printf("Servos probably successful\n");
 
     gps_init();
     while(1) {

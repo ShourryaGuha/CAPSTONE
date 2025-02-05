@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/drivers.dir/main.c.o.d"
   "CMakeFiles/drivers.dir/servo_control.c.o"
   "CMakeFiles/drivers.dir/servo_control.c.o.d"
+  "CMakeFiles/drivers.dir/solenoid_control.c.o"
+  "CMakeFiles/drivers.dir/solenoid_control.c.o.d"
   "libdrivers.a"
   "libdrivers.pdb"
 )

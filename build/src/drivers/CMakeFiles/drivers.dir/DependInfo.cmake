@@ -11,6 +11,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/gps.c" "src/drivers/CMakeFiles/drivers.dir/gps.c.o" "gcc" "src/drivers/CMakeFiles/drivers.dir/gps.c.o.d"
   "/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/main.c" "src/drivers/CMakeFiles/drivers.dir/main.c.o" "gcc" "src/drivers/CMakeFiles/drivers.dir/main.c.o.d"
   "/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/servo_control.c" "src/drivers/CMakeFiles/drivers.dir/servo_control.c.o" "gcc" "src/drivers/CMakeFiles/drivers.dir/servo_control.c.o.d"
+  "/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/solenoid_control.c" "src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o" "gcc" "src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o.d"
   )
 
 # Targets to which this target links.

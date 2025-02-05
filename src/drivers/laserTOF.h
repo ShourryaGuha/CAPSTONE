@@ -52,16 +52,8 @@ typedef struct {
  *         -2: UART initialization failed
  *         -3: Auto baud rate detection failed
  */
-int LRF_Init(LRF_Device *device);
+int Laser_Init(LRF_Device *device);
 
-/**
- * @brief Close the device and cleanup resources
- * 
- * Powers down the device and releases all resources.
- * 
- * @param device Pointer to device handle structure
- */
-void LRF_Close(LRF_Device *device);
 
 /**
  * @brief Perform a single distance measurement
@@ -73,7 +65,7 @@ void LRF_Close(LRF_Device *device);
  *         -1: Communication timeout
  *         -2: Invalid response
  */
-int LRF_Measure(LRF_Device *device, LRF_Mode mode, float *distance);
+int Laser_Measure(LRF_Device *device, LRF_Mode mode, float *distance);
 
 /**
  * @brief Read the device status
@@ -81,7 +73,7 @@ int LRF_Measure(LRF_Device *device, LRF_Mode mode, float *distance);
  * @param device Pointer to device handle structure
  * @return Status code from LRF_Status enum
  */
-LRF_Status LRF_GetStatus(LRF_Device *device);
+LRF_Status Laser_GetStatus(LRF_Device *device);
 
 
 #endif /* LASERTOF_H */

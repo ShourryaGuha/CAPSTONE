@@ -18,15 +18,14 @@ int main() {
     LRF_Device device;
     float distance;
 
-    if (LRF_Init(&device) != 0) {
+    if (Laser_Init(&device) != 0) {
         fprintf(stderr, "Failed to initialize device\n");
         return 1;
     }
 
-    if (LRF_Measure(&device, MODE_AUTO, &distance) == 0) {
+    if (Laser_Measure(&device, MODE_AUTO, &distance) == 0) {
         printf("Distance: %.3f m\n", distance);
     }
 
-    LRF_Close(&device);
 
 }

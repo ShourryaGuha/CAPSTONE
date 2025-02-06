@@ -25,7 +25,7 @@ void mpu6050_init(void);
 void read_mpu6050_data(uint8_t *buffer);
 void parse_mpu6050_data(MPU6050Data *mpu_data, const uint8_t *buffer);
 void print_mpu6050_data(const MPU6050Data *mpu_data);
-void spin(void);
+void spin_imu(void);
 void terminate_imu_connection(void);
 
 #endif // IMU_H

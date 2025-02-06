@@ -7,7 +7,7 @@ int main() {
     mpu6050_init();
 
     while (1) {
-        spin();
+        spin_imu();
         usleep(10000);
     }
 

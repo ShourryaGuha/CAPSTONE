@@ -77,9 +77,9 @@ void parse_mpu6050_data(MPU6050Data *mpu_data, const uint8_t *buffer) {
     int16_t raw_gy = combine_bytes(buffer[10], buffer[11]);
     int16_t raw_gz = combine_bytes(buffer[12], buffer[13]);
 
-    mpu_data->ax = raw_ax / 16384.0;
-    mpu_data->ay = raw_ay / 16384.0;
-    mpu_data->az = raw_az / 16384.0;
+    mpu_data->ax = raw_ax / 16384.0 * 9.80665;
+    mpu_data->ay = raw_ay / 16384.0 * 9.80665;
+    mpu_data->az = raw_az / 16384.0 * 9.80665;
     mpu_data->gx = raw_gx / 131.0;
     mpu_data->gy = raw_gy / 131.0;
     mpu_data->gz = raw_gz / 131.0;
@@ -87,11 +87,11 @@ void parse_mpu6050_data(MPU6050Data *mpu_data, const uint8_t *buffer) {
 
 void print_mpu6050_data(const MPU6050Data *mpu_data) {
     printf("MPU6050:\n");
-    printf("  Acceleration: x=%f g, y=%f g, z=%f g\n", mpu_data->ax, mpu_data->ay, mpu_data->az);
+    printf("  Acceleration: x=%f m/s^2, y=%f m/s^2, z=%f m/s^2\n", mpu_data->ax, mpu_data->ay, mpu_data->az);
     printf("  Gyroscope:    x=%f °/s, y=%f °/s, z=%f °/s\n", mpu_data->gx, mpu_data->gy, mpu_data->gz);
 }
 
-void spin() {
+void spin_imu() {
     uint8_t buffer[14];
     read_mpu6050_data(buffer);
     parse_mpu6050_data(&mpu_data, buffer);

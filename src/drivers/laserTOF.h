@@ -76,5 +76,6 @@ int Laser_Measure(LRF_Device *device, LRF_Mode mode, float *distance);
 LRF_Status Laser_GetStatus(LRF_Device *device);
 
 
+
 #endif /* LASERTOF_H */
 

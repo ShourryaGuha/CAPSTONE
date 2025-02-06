@@ -60,6 +60,20 @@ int16_t combine_bytes(uint8_t msb, uint8_t lsb) {
     return (int16_t)((msb << 8) | lsb);
 }
 
+// Initialize BPM180 data structs
+void init_bpm180_data(BMP180Calib *bmp_calib, BMP180Data *bmp_data) {
+    memset(bmp_calib, 0, sizeof(BMP180Calib));
+    memset(bmp_data, 0, sizeof(BMP180Data));
+}
+
+// Initialize BPM180
+void bpm180_init() {
+    const char *i2c_device = "/dev/i2c-1";
+    i2c_open_device(i2c_device, BMP180_ADDR);
+    init_bpm180_data(&bmp_calib, &bmp_data);
+    bmp180_read_calibration();
+}
+
 // --- BMP180 Calibration Functions ---
 
 // Read 22 bytes of calibration data from registers 0xAA to 0xBF
@@ -153,7 +167,7 @@ int32_t bmp180_read_raw_pressure() {
 
 // Calculate the true pressure (in hPa) and altitude (in m)
 // Temperature is still measured for compensation, but not output.
-void bmp180_calculate(BMP180Data *data) {
+void parse_bpm180_data(BMP180Data *data) {
     int32_t UT = bmp180_read_raw_temperature();
     int32_t UP = bmp180_read_raw_pressure();
     
@@ -204,8 +218,8 @@ void print_bmp180_data(const BMP180Data *data) {
 }
 
 // High-level function to perform a complete sensor read and display the results
-void spin() {
-    bmp180_calculate(&bmp_data);
+void spin_bpm() {
+    parse_bpm180_data(&bmp_data);
     print_bmp180_data(&bmp_data);
 }
 
@@ -214,17 +228,16 @@ void terminate_bmp_connection() {
     close(bmp_fd);
 }
 
-int main() {
-    const char *i2c_device = "/dev/i2c-1";
-    i2c_open_device(i2c_device, BMP180_ADDR);
-    bmp180_read_calibration();
+// int main() {
     
-    // Loop continuously reading and printing pressure and altitude data
-    while (1) {
-        spin();
-        usleep(500000); // Delay for 500 ms
-    }
+//     bpm180_init();
+
+//     // Loop continuously reading and printing pressure and altitude data
+//     while (1) {
+//         spin_bpm();
+//         usleep(500000); // Delay for 500 ms
+//     }
     
-    terminate_bmp_connection();
-    return 0;
-}
+//     terminate_bmp_connection();
+//     return 0;
+// }

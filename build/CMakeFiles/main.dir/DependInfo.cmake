@@ -8,12 +8,12 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/main.c" "CMakeFiles/main.dir/src/drivers/main.c.o" "gcc" "CMakeFiles/main.dir/src/drivers/main.c.o.d"
+  "/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/src/drivers/main.c" "CMakeFiles/main.dir/src/drivers/main.c.o" "gcc" "CMakeFiles/main.dir/src/drivers/main.c.o.d"
   )
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers/CMakeFiles/drivers.dir/DependInfo.cmake"
+  "/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/src/drivers/CMakeFiles/drivers.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

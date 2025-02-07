@@ -5,7 +5,7 @@
 #include "transmitter.h" 
 
 int main() {
-  // Initialize the NRF24L01+ module.
+    // Initialize the NRF24L01+ module.
     nrf24_init();
     
     // Prepare our sensor data structure with initial values.
@@ -27,9 +27,10 @@ int main() {
 
         // Transmit the sensorData structure as a 6-byte payload.
         nrf24_transmit_payload((uint8_t*)&sensorData, sizeof(sensorData));
-        
-        delay(1);  // A short delay (1 ms) before sending the next payload.
     }
+    
+    // Cleanup (this code is unreachable in the infinite loop, but shown for completeness).
+    termiate_transmitter();
     
     return 0;
 }

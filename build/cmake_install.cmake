@@ -1,4 +1,4 @@
-# Install script for directory: /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE
+# Install script for directory: /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/src/drivers/cmake_install.cmake")
+  include("/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/src/drivers/cmake_install.cmake")
 
 endif()
 
@@ -56,5 +56,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <wiringPi.h>      // For GPIO control
-#include <wiringPiSPI.h>   // For SPI communication
+#include <pigpio.h>   // For GPIO control, delays, and SPI communication
 
 // Define the pins and SPI channel/speed
-#define CE_PIN      8         // Chip Enable pin (GPIO 8)
-#define CSN_PIN     26        // Chip Select Not pin (GPIO 26)
+#define CE_PIN      8         // Chip Enable pin (BCM numbering)
+#define CSN_PIN     26        // Chip Select Not pin (BCM numbering)
 #define SPI_CHANNEL 0         // SPI channel 0 (/dev/spidev0.0)
 #define SPI_SPEED   500000    // SPI clock speed (500 kHz)
 
@@ -22,6 +21,21 @@ typedef struct __attribute__((packed)) {
     uint16_t servo2;     // Servo 2 angle
 } SensorData;
 
+// Global variable for the SPI handle
+int spi_handle;
+
+/*
+ * Perform an SPI data transfer using pigpio's spiXfer.
+ * The same buffer is used for both transmission and reception.
+ */
+int pigpioSPIDataRW(uint8_t *data, unsigned int len) {
+    int ret = spiXfer(spi_handle, data, data, len);
+    if (ret < 0) {
+        fprintf(stderr, "SPI transfer failed\n");
+    }
+    return ret;
+}
+
 /*
  * Write a single byte 'value' to the NRF24L01 register 'reg'.
  */
@@ -29,24 +43,24 @@ void nrf24_write_register(uint8_t reg, uint8_t value) {
     uint8_t data[2];
     data[0] = NRF_W_REGISTER | (reg & 0x1F);  // Create command byte (register write)
     data[1] = value;                          // Data byte to write
-    digitalWrite(CSN_PIN, LOW);               // Begin SPI transaction (CSN low)
-    wiringPiSPIDataRW(SPI_CHANNEL, data, 2);  // Send 2 bytes over SPI
-    digitalWrite(CSN_PIN, HIGH);              // End SPI transaction (CSN high)
+    gpioWrite(CSN_PIN, 0);                    // Begin SPI transaction (CSN low)
+    pigpioSPIDataRW(data, 2);                 // Send 2 bytes over SPI
+    gpioWrite(CSN_PIN, 1);                    // End SPI transaction (CSN high)
 }
 
 /*
  * Write multiple bytes starting at register 'reg'.
  * This is used to set the TX address.
  */
-void nrf24_write_register_multi(uint8_t reg, uint8_t *data, uint8_t len) {
+void nrf24_write_register_multi(uint8_t reg, uint8_t *data_in, uint8_t len) {
     uint8_t buffer[len+1];
     buffer[0] = NRF_W_REGISTER | (reg & 0x1F);  // Command byte
     for (int i = 0; i < len; i++) {
-        buffer[i+1] = data[i];                  // Copy data bytes
+        buffer[i+1] = data_in[i];               // Copy data bytes
     }
-    digitalWrite(CSN_PIN, LOW);
-    wiringPiSPIDataRW(SPI_CHANNEL, buffer, len+1);
-    digitalWrite(CSN_PIN, HIGH);
+    gpioWrite(CSN_PIN, 0);
+    pigpioSPIDataRW(buffer, len+1);
+    gpioWrite(CSN_PIN, 1);
 }
 
 /*
@@ -54,9 +68,9 @@ void nrf24_write_register_multi(uint8_t reg, uint8_t *data, uint8_t len) {
  */
 void nrf24_flush_tx() {
     uint8_t cmd = NRF_FLUSH_TX;
-    digitalWrite(CSN_PIN, LOW);
-    wiringPiSPIDataRW(SPI_CHANNEL, &cmd, 1);
-    digitalWrite(CSN_PIN, HIGH);
+    gpioWrite(CSN_PIN, 0);
+    pigpioSPIDataRW(&cmd, 1);
+    gpioWrite(CSN_PIN, 1);
 }
 
 /*
@@ -69,14 +83,14 @@ void nrf24_transmit_payload(uint8_t *payload, uint8_t len) {
     for (int i = 0; i < len; i++) {
         buffer[i+1] = payload[i];  // Copy payload data
     }
-    digitalWrite(CSN_PIN, LOW);
-    wiringPiSPIDataRW(SPI_CHANNEL, buffer, len+1);
-    digitalWrite(CSN_PIN, HIGH);
+    gpioWrite(CSN_PIN, 0);
+    pigpioSPIDataRW(buffer, len+1);
+    gpioWrite(CSN_PIN, 1);
 
     // Pulse the CE pin high for at least 10 µs to start transmission.
-    digitalWrite(CE_PIN, HIGH);
-    delayMicroseconds(15);  // 15 µs pulse (safe margin)
-    digitalWrite(CE_PIN, LOW);
+    gpioWrite(CE_PIN, 1);
+    gpioDelay(15);  // 15 µs pulse (safe margin)
+    gpioWrite(CE_PIN, 0);
 }
 
 /*
@@ -84,22 +98,31 @@ void nrf24_transmit_payload(uint8_t *payload, uint8_t len) {
  * Only the essential settings are configured.
  */
 void nrf24_init() {
-    // Initialize WiringPi with BCM (GPIO) pin numbering.
-    if (wiringPiSetupGpio() == -1) {
-        fprintf(stderr, "WiringPi setup failed\n");
+    // Initialize the PiGPIO library.
+    if (gpioInitialise() < 0) {
+        fprintf(stderr, "pigpio initialization failed\n");
         exit(1);
     }
     
     // Set the CE and CSN pins as outputs.
-    pinMode(CE_PIN, OUTPUT);
-    pinMode(CSN_PIN, OUTPUT);
-    digitalWrite(CSN_PIN, HIGH);  // Ensure CSN is high when idle.
+    gpioSetMode(CE_PIN, PI_OUTPUT);
+    gpioSetMode(CSN_PIN, PI_OUTPUT);
+    gpioWrite(CSN_PIN, 1);  // Ensure CSN is high when idle.
     
     // Initialize SPI on the designated channel and speed.
-    if (wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED) == -1) {
+    spi_handle = spiOpen(SPI_CHANNEL, SPI_SPEED, 0);
+    if (spi_handle < 0) {
         fprintf(stderr, "SPI setup failed\n");
         exit(1);
     }
+    
+    // **NEW: Set the RF channel to 76 to match the Arduino receiver.**
+    nrf24_write_register(0x05, 76);
+    
+    // **NEW: Set RF_SETUP register for 250kbps data rate and high PA level.**
+    // For 250kbps, set RF_DR_LOW (bit 3) and for high power, set PA_PWR bits (bits 2:1) to 11.
+    // This gives a value of 0x0E.
+    nrf24_write_register(0x06, 0x0E);
 
     // Set CONFIG register: power up, enable CRC (2 bytes), and set as transmitter.
     // Bit 3: EN_CRC, Bit 2: CRCO, Bit 1: PWR_UP, Bit 0: PRIM_RX (0 = TX mode).
@@ -114,37 +137,44 @@ void nrf24_init() {
     nrf24_flush_tx();
     
     // Ensure CE is low to keep the module in standby until transmitting.
-    digitalWrite(CE_PIN, LOW);
+    gpioWrite(CE_PIN, 0);
 }
 
-int main(void) {
-
+void terminate_transmitter() {
+    // Close the SPI connection and release resources.
+    spiClose(spi_handle);
     
-    // Initialize the NRF24L01+ module.
-    nrf24_init();
-    
-    // Prepare our sensor data structure with initial values.
-    SensorData sensorData;
-    sensorData.distance = 100; // Example starting value for distance
-    sensorData.servo1   = 45;  // Example starting angle for servo 1
-    sensorData.servo2   = 90;  // Example starting angle for servo 2
-    
-    printf("Starting data transmission. Press Ctrl+C to stop.\n");
-    
-    // Main loop: update sensor values (simulated) and transmit them.
-    while (1) {
-        // (Simulated) Update sensor values. Replace these with actual sensor readings.
-        sensorData.distance++;         // Increment distance
-        if (sensorData.distance > 1000)
-            sensorData.distance = 0;
-        sensorData.servo1 = (sensorData.servo1 + 1) % 181; // Cycle 0-180
-        sensorData.servo2 = (sensorData.servo2 + 2) % 181; // Cycle 0-180
-
-        // Transmit the sensorData structure as a 6-byte payload.
-        nrf24_transmit_payload((uint8_t*)&sensorData, sizeof(sensorData));
-        
-        delay(1);  // A short delay (1 ms) before sending the next payload.
-    }
-    
-    return 0;
+    // Release the GPIO pins and library resources.
+    gpioTerminate();
 }
+
+// int main(void) {
+//     // Initialize the NRF24L01+ module.
+//     nrf24_init();
+    
+//     // Prepare our sensor data structure with initial values.
+//     SensorData sensorData;
+//     sensorData.distance = 100; // Example starting value for distance
+//     sensorData.servo1   = 45;  // Example starting angle for servo 1
+//     sensorData.servo2   = 90;  // Example starting angle for servo 2
+    
+//     printf("Starting data transmission. Press Ctrl+C to stop.\n");
+    
+//     // Main loop: update sensor values (simulated) and transmit them.
+//     while (1) {
+//         // (Simulated) Update sensor values. Replace these with actual sensor readings.
+//         sensorData.distance++;         // Increment distance
+//         if (sensorData.distance > 1000)
+//             sensorData.distance = 0;
+//         sensorData.servo1 = (sensorData.servo1 + 1) % 181; // Cycle 0-180
+//         sensorData.servo2 = (sensorData.servo2 + 2) % 181; // Cycle 0-180
+
+//         // Transmit the sensorData structure as a 6-byte payload.
+//         nrf24_transmit_payload((uint8_t*)&sensorData, sizeof(sensorData));
+//     }
+    
+//     // Cleanup (this code is unreachable in the infinite loop, but shown for completeness).
+//     terminate_transmitter();
+    
+//     return 0;
+// }

@@ -1,17 +1,15 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "gps.h"
-<<<<<<< HEAD
 #include "laserTOF.h"
-=======
+
 #include "servo_control.h"
->>>>>>> main
+
 
 int main() {
     // Placeholder for now
     printf("I look forward to the war crimes that will commence shortly\n");
 
-<<<<<<< HEAD
     // gps_init();
     // while(1) {
     //     test_read();
@@ -35,26 +33,24 @@ int main() {
     
     // return 0;
 
-    Laser_Device sensor1;
+    // Laser_Device sensor1;
     
-    sensor1.device_path = UART3_DEVICE;
-    if (Laser_Init(&sensor1) != 0) {
-        fprintf(stderr, "Failed to initialize sensor 1\n");
-        return 1;
-    }
+    // sensor1.device_path = UART3_DEVICE;
+    // if (Laser_Init(&sensor1) != 0) {
+    //     fprintf(stderr, "Failed to initialize sensor 1\n");
+    //     return 1;
+    // }
 
-    // Try reading module status
-    int status = Laser_ReadStatus(&sensor1);
-    if (status < 0) {
-        fprintf(stderr, "Failed to read module status\n");
-    } else {
-        printf("Sensor Status: 0x%04X\n", status);
-    }
+    // // Try reading module status
+    // int status = Laser_ReadStatus(&sensor1);
+    // if (status < 0) {
+    //     fprintf(stderr, "Failed to read module status\n");
+    // } else {
+    //     printf("Sensor Status: 0x%04X\n", status);
+    // }
 
-    return 0;
+    // return 0;
 
-
-=======
     // Initialize two servo motors
     servo_t servo1, servo2;
     if (servo_init(&servo1, PWM0_GPIO) < 0) {
@@ -90,5 +86,4 @@ int main() {
     }
     terminate_connection();
     return 0;
->>>>>>> main
 }

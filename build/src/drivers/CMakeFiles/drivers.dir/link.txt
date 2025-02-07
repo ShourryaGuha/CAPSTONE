@@ -1,0 +1,2 @@
+/usr/bin/ar qc libdrivers.a CMakeFiles/drivers.dir/laserTOF.c.o CMakeFiles/drivers.dir/gps.c.o
+/usr/bin/ranlib libdrivers.a

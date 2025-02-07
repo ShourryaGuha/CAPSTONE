@@ -1,45 +1,35 @@
 #include <stdio.h>
 #include <unistd.h>
-#include "gps.h"
-#include "servo_control.h"
+// #include "gps.h"
+// #include "servo_control.h"
+#include "transmitter.h" 
 
 int main() {
-    // Placeholder for now
-    printf("I look forward to the war crimes that will commence shortly\n");
+  // Initialize the NRF24L01+ module.
+    nrf24_init();
+    
+    // Prepare our sensor data structure with initial values.
+    SensorData sensorData;
+    sensorData.distance = 100; // Example starting value for distance
+    sensorData.servo1   = 45;  // Example starting angle for servo 1
+    sensorData.servo2   = 90;  // Example starting angle for servo 2
+    
+    printf("Starting data transmission. Press Ctrl+C to stop.\n");
+    
+    // Main loop: update sensor values (simulated) and transmit them.
+    while (1) {
+        // (Simulated) Update sensor values. Replace these with actual sensor readings.
+        sensorData.distance++;         // Increment distance
+        if (sensorData.distance > 1000)
+            sensorData.distance = 0;
+        sensorData.servo1 = (sensorData.servo1 + 1) % 181; // Cycle 0-180
+        sensorData.servo2 = (sensorData.servo2 + 2) % 181; // Cycle 0-180
 
-    // Initialize two servo motors
-    servo_t servo1, servo2;
-    if (servo_init(&servo1, PWM0_GPIO) < 0) {
-        fprintf(stderr, "Failed to initialize servo 1\n");
-        return -1;
+        // Transmit the sensorData structure as a 6-byte payload.
+        nrf24_transmit_payload((uint8_t*)&sensorData, sizeof(sensorData));
+        
+        delay(1);  // A short delay (1 ms) before sending the next payload.
     }
-    if (servo_init(&servo2, PWM1_GPIO) < 0) {
-        fprintf(stderr, "Failed to initialize servo 2\n");
-        servo_cleanup(&servo1);
-        return -1;
-    }
-
-    // Move both servos to 25 degrees
-    if (servo_set_angle(&servo1, 25.0f) < 0) {
-        fprintf(stderr, "Failed to set angle for servo 1\n");
-    }
-    if (servo_set_angle(&servo2, 25.0f) < 0) {
-        fprintf(stderr, "Failed to set angle for servo 2\n");
-    }
-
-    // Simulate some delay to observe servo movement
-    sleep(2);
-
-    // Cleanup resources
-    servo_cleanup(&servo1);
-    servo_cleanup(&servo2);
-
-    gps_init();
-    while(1) {
-        spin_gps();
-        usleep(10000);
-        test_final_values();
-    }
-    terminate_connection();
+    
     return 0;
 }

@@ -4,9 +4,12 @@
 
 ### Login Details
 - **Hostname:** `bombsite.local` (may not always work)
-- **IP Address:** `192.168.91.50` (consistent)
+- **IP Address:** `192.168.91.50` (consistent for Cameron's phone)
 - **Username:** `shourryag`
 - **Password:** `mte482@caps`
+
+### Add another wifi to the rpi (not required)
+https://www.thedigitalpictureframe.com/how-to-add-a-second-wifi-network-to-your-raspberry-pi/
 
 ### SSH Access via VS Code
 1. Install [Visual Studio Code](https://code.visualstudio.com/).
@@ -37,10 +40,13 @@
 #### Setting Up SSH Key Authentication
 To avoid entering a password every time:
 1. Navigate to your SSH key directory (`~/.ssh/` or equivalent).
-2. Copy your SSH key to the Raspberry Pi:
-   ```sh
-   ssh-copy-id -i id_ed25519.pub shourryag@192.168.91.50
-   ```
+3. Open your .pub ssh key (NOT the private). If you have not created, << ssh-keygen -t ed25519 -C "your_email@example.com" >> is the command. Make sure it is the email associated with your relevant github account
+4. copy it (use command << cat filenamehere.pub >>)
+5. connect to the rpi via ssh (either in vscode or terminal)
+6. Go to ~/.ssh/  on the rpi
+7. Open the authorized_keys file
+8. On a newline in the file, add your key
+9. Save, close. Should be able to ssh in without password now. If not, check the email you generated your key with, or reboot the pi. 
 
 ---
 

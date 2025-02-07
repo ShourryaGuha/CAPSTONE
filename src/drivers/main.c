@@ -7,6 +7,10 @@
 int main() {
     // Initialize the NRF24L01+ module.
     nrf24_init();
+
+    // Allow time for the module to fully power up
+    usleep(200000);  // 200ms delay
+
     
     // Prepare our sensor data structure with initial values.
     SensorData sensorData;
@@ -30,7 +34,7 @@ int main() {
     }
     
     // Cleanup (this code is unreachable in the infinite loop, but shown for completeness).
-    termiate_transmitter();
+    terminate_transmitter();
     
     return 0;
 }

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <pigpio.h>   // For GPIO control, delays, and SPI communication
+#include <unistd.h>  // Required for usleep()
+
 
 // Define the pins and SPI channel/speed
 #define CE_PIN      8         // Chip Enable pin (BCM numbering)
@@ -83,6 +85,15 @@ void nrf24_transmit_payload(uint8_t *payload, uint8_t len) {
     for (int i = 0; i < len; i++) {
         buffer[i+1] = payload[i];  // Copy payload data
     }
+
+        // Debug: Print payload being sent
+    printf("Sending Payload: ");
+    for (int i = 0; i < len; i++) {
+        printf("0x%02X ", payload[i]);  // Hexadecimal format for better visualization
+    }
+    printf("\n");
+
+
     gpioWrite(CSN_PIN, 0);
     pigpioSPIDataRW(buffer, len+1);
     gpioWrite(CSN_PIN, 1);
@@ -91,6 +102,9 @@ void nrf24_transmit_payload(uint8_t *payload, uint8_t len) {
     gpioWrite(CE_PIN, 1);
     gpioDelay(15);  // 15 µs pulse (safe margin)
     gpioWrite(CE_PIN, 0);
+
+    usleep(1000000);
+
 }
 
 /*

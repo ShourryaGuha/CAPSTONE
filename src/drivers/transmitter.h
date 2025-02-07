@@ -27,5 +27,6 @@ void nrf24_write_register(uint8_t reg, uint8_t value);  // Writes a single byte 
 void nrf24_write_register_multi(uint8_t reg, uint8_t *data, uint8_t len); // Writes multiple bytes
 void nrf24_flush_tx();                      // Flushes the TX FIFO
 void nrf24_transmit_payload(uint8_t *payload, uint8_t len); // Transmits the payload
+void terminate_transmitter(); // Terminates the transmitter
 
 #endif // TRANSMITTER_H

@@ -15,17 +15,26 @@ int main() {
     // terminate_connection();
     // return 0;
 
-    LRF_Device device;
+    Laser_Device sensor1, sensor2;
     float distance;
 
-    if (Laser_Init(&device) != 0) {
-        fprintf(stderr, "Failed to initialize device\n");
-        return 1;
+    sensor1.device_path = UART2_DEVICE;
+    if (Laser_Init(&sensor1) != 0) {
+        fprintf(stderr, "Failed to initialize sensor 1\n");
+        exit(1);
     }
-
-    if (Laser_Measure(&device, MODE_AUTO, &distance) == 0) {
-        printf("Distance: %.3f m\n", distance);
-    }
+    
+    // Initialize both sensors
+    // init_both_sensors(&sensor1, &sensor2);
+    
+    // Take measurements from both sensors
+    Laser_Measure(&sensor1, MODE_AUTO_1_SHOT, &distance);
+    printf("Sensor 1 distance: %.2f m\n", distance);
+    
+    // Laser_Measure(&sensor2, MODE_AUTO_1_SHOT, &distance);
+    // printf("Sensor 2 distance: %.2f m\n", distance);
+    
+    return 0;
 
 
 }

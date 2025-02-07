@@ -15,25 +15,37 @@ int main() {
     // terminate_connection();
     // return 0;
 
-    Laser_Device sensor1, sensor2;
-    float distance;
+    // Laser_Device sensor1, sensor2;
+    // float distance;
 
-    sensor1.device_path = UART2_DEVICE;
+    // sensor1.device_path = UART3_DEVICE;
+    // if (Laser_Init(&sensor1) != 0) {
+    //     fprintf(stderr, "Failed to initialize sensor 1\n");
+    //     return 1;
+    // }
+    
+    // // Take measurements from both sensors
+    // Laser_Measure(&sensor1, MODE_AUTO_1_SHOT, &distance);
+    // printf("Sensor 1 distance: %.2f m\n", distance);
+    
+    // return 0;
+
+    Laser_Device sensor1;
+    
+    sensor1.device_path = UART3_DEVICE;
     if (Laser_Init(&sensor1) != 0) {
         fprintf(stderr, "Failed to initialize sensor 1\n");
-        exit(1);
+        return 1;
     }
-    
-    // Initialize both sensors
-    // init_both_sensors(&sensor1, &sensor2);
-    
-    // Take measurements from both sensors
-    Laser_Measure(&sensor1, MODE_AUTO_1_SHOT, &distance);
-    printf("Sensor 1 distance: %.2f m\n", distance);
-    
-    // Laser_Measure(&sensor2, MODE_AUTO_1_SHOT, &distance);
-    // printf("Sensor 2 distance: %.2f m\n", distance);
-    
+
+    // Try reading module status
+    int status = Laser_ReadStatus(&sensor1);
+    if (status < 0) {
+        fprintf(stderr, "Failed to read module status\n");
+    } else {
+        printf("Sensor Status: 0x%04X\n", status);
+    }
+
     return 0;
 
 

@@ -77,7 +77,7 @@ typedef struct
 static uint8_t calculate_checksum(uint8_t *data, int length);
 static int validate_response(uint8_t *response, int length);
 static void init_measurement_buffer(MeasurementBuffer *buffer);
-static void add_measurement(Laser_Device *device, float distance, Laser_Status status);
+// static void add_measurement(Laser_Device *device, float distance, Laser_Status status);
 
 // Initialize the measurement buffer
 static void init_measurement_buffer(MeasurementBuffer *buffer)
@@ -88,38 +88,38 @@ static void init_measurement_buffer(MeasurementBuffer *buffer)
 }
 
 // Add a measurement to the circular buffer
-static void add_measurement(Laser_Device *device, float distance, Laser_Status status)
-{
-    MeasurementBuffer *buffer = &device->measurements;
+// static void add_measurement(Laser_Device *device, float distance, Laser_Status status)
+// {
+//     MeasurementBuffer *buffer = &device->measurements;
 
-    // Get current timestamp
-    Measurement new_measurement;
-    clock_gettime(CLOCK_REALTIME, &new_measurement.timestamp);
-    new_measurement.distance = distance;
-    new_measurement.status = status;
+//     // Get current timestamp
+//     Measurement new_measurement;
+//     clock_gettime(CLOCK_REALTIME, &new_measurement.timestamp);
+//     new_measurement.distance = distance;
+//     new_measurement.status = status;
 
-    // Add to circular buffer
-    buffer->data[buffer->head] = new_measurement;
-    buffer->head = (buffer->head + 1) % MAX_MEASUREMENTS;
+//     // Add to circular buffer
+//     buffer->data[buffer->head] = new_measurement;
+//     buffer->head = (buffer->head + 1) % MAX_MEASUREMENTS;
 
-    if (buffer->count < MAX_MEASUREMENTS)
-    {
-        buffer->count++;
-    }
-    else
-    {
-        buffer->tail = (buffer->tail + 1) % MAX_MEASUREMENTS;
-    }
+//     if (buffer->count < MAX_MEASUREMENTS)
+//     {
+//         buffer->count++;
+//     }
+//     else
+//     {
+//         buffer->tail = (buffer->tail + 1) % MAX_MEASUREMENTS;
+//     }
 
-    // Update last valid measurement if status is OK
-    if (status == STATUS_OK)
-    {
-        device->last_valid_distance = distance;
-    }
+//     // Update last valid measurement if status is OK
+//     if (status == STATUS_OK)
+//     {
+//         device->last_valid_distance = distance;
+//     }
 
-    device->last_status = status;
-    device->last_measurement_time = new_measurement.timestamp.tv_sec;
-}
+//     device->last_status = status;
+//     device->last_measurement_time = new_measurement.timestamp.tv_sec;
+// }
 
 // Initialize a laser rangefinder
 int Laser_Init(Laser_Device *device)

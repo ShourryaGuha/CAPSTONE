@@ -9,8 +9,8 @@
 #include <time.h>
 
 // Constants
-#define UART2_DEVICE "/dev/ttyAMA2"
-#define UART3_DEVICE "/dev/ttyAMA3"
+#define UART2_DEVICE "/dev/ttyAMA2"   // J1 on pi
+#define UART3_DEVICE "/dev/ttyAMA3"     // J3 on pi
 #define BAUD_RATE B19200 // deafault baud rate for laser sensor (avoid autodetect)
 #define MAX_BUFFER_SIZE 32
 #define DEFAULT_SLAVE_ADDR 0x00

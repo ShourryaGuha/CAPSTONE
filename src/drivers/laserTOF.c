@@ -108,7 +108,7 @@ int Laser_Measure_Single(Laser_Device *device, Laser_Mode mode, float *distance)
         0xFF,  // DeviceID default 0xff
         0x04,  // Length
         0x01,  // start measurement 01, stop measurement 00
-        0x00,  // Payload
+        0x00,  // Payload   
         0x00,  // single measurement 01, continuous measurement 00
         0x00,  // Payload
         0xFF   // Checksum
@@ -119,10 +119,15 @@ int Laser_Measure_Single(Laser_Device *device, Laser_Mode mode, float *distance)
         fprintf(stderr, "Error: Failed to send measurement command\n");
         return -1;
     }
+    usleep(50000);  // Wait 50ms before reading
 
     // Read response
     uint8_t response[12];
     int bytes_read = read(device->fd, response, sizeof(response));
+    if (bytes_read <= 0) {
+        fprintf(stderr, "No data received from sensor.\n");
+        return -1;
+    }
 
     // Print raw response
     fprintf(stderr, "Raw Sensor Response: ");

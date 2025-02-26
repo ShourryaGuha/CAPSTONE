@@ -18,18 +18,18 @@
 // 0xFA 0X01 0XFF 0X04 0X01 0X00 0X00 0X00 0XFF  continuous measurement
 // 0xFA 0X01 0XFF 0X04 0X00 0X00 0X00 0X00 0XFE  stop command frame
 
-// Structure for each laser sensor
-typedef struct
-{
-    int fd;                         // File descriptor for serial port
-    uint8_t address;                // Device address
-    const char *device_path;        // UART device path
-    // MeasurementBuffer measurements; // Circular buffer of measurements
-    // float last_valid_distance;      // Last valid measurement
-    // time_t last_measurement_time;   // Timestamp of last measurement
-    // Laser_Status last_status;       // Last status read
-    float distance;  //measured distance
-} Laser_Device;
+// // Structure for each laser sensor
+// typedef struct
+// {
+//     int fd;                         // File descriptor for serial port
+//     uint8_t address;                // Device address
+//     const char *device_path;        // UART device path
+//     // MeasurementBuffer measurements; // Circular buffer of measurements
+//     // float last_valid_distance;      // Last valid measurement
+//     // time_t last_measurement_time;   // Timestamp of last measurement
+//     // Laser_Status last_status;       // Last status read
+//     float distance;  //measured distance
+// } Laser_Device;
 
 // Initialize a laser rangefinder
 int Laser_Init(Laser_Device *device) {
@@ -79,7 +79,7 @@ int Laser_Init(Laser_Device *device) {
 
     // Read settings
     tty.c_cc[VMIN] = 0;  // Return even if no chars received
-    tty.c_cc[VTIME] = 5; // Wait up to 0.5 seconds
+    tty.c_cc[VTIME] = 10; // Wait up to 0.5 seconds
 
     // Flush port
     tcflush(device->fd, TCIOFLUSH);
@@ -96,6 +96,8 @@ int Laser_Init(Laser_Device *device) {
     fcntl(device->fd, F_SETFL, 0);
 
     device->address = DEFAULT_SLAVE_ADDR;
+
+    return 0;
     
 }
 
@@ -107,9 +109,9 @@ int Laser_Measure_Single(Laser_Device *device, Laser_Mode mode, float *distance)
         0x04,  // Length
         0x01,  // start measurement 01, stop measurement 00
         0x00,  // Payload
-        0x01,  // single measurement 01, continuous measurement 00
+        0x00,  // single measurement 01, continuous measurement 00
         0x00,  // Payload
-        0x00   // Checksum
+        0xFF   // Checksum
     };
 
     // Send measurement start command

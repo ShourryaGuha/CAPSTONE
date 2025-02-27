@@ -45,7 +45,7 @@ int main() {
 
     Laser_Device sensor1;
     
-    sensor1.device_path = UART3_DEVICE;
+    sensor1.device_path = UART2_DEVICE;
     if (Laser_Init(&sensor1) != 0) {
         fprintf(stderr, "Failed to initialize sensor 1\n");
         return 1;

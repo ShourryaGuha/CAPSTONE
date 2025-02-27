@@ -9,12 +9,7 @@
 #include <time.h>
 #include "laserTOF.h"
 
-// Constants
-#define UART2_DEVICE "/dev/ttyAMA2"   // J1 on pi
-#define UART3_DEVICE "/dev/ttyAMA3"     // J3 on pi
-
-
-//0xFA 0X01 0XFF 0X04 0X01 0X00 0X01 0X00 0X00   single measurement
+// 0xFA 0X01 0XFF 0X04 0X01 0X00 0X01 0X00 0X00   single measurement
 // 0xFA 0X01 0XFF 0X04 0X01 0X00 0X00 0X00 0XFF  continuous measurement
 // 0xFA 0X01 0XFF 0X04 0X00 0X00 0X00 0X00 0XFE  stop command frame
 
@@ -35,7 +30,8 @@
 int Laser_Init(Laser_Device *device) {
     struct termios tty;
     // Open serial port
-    device->fd = open(device->device_path, O_RDWR | O_NOCTTY | O_NDELAY);
+    // device->fd = open(device->device_path, O_RDWR | O_NOCTTY | O_NDELAY);
+    device->fd = open(device->device_path, O_RDWR | O_NOCTTY);
     if (device->fd < 0)
     {
         fprintf(stderr, "Failed to open serial port %s: %s\n", device->device_path, strerror(errno));
@@ -97,8 +93,7 @@ int Laser_Init(Laser_Device *device) {
 
     device->address = DEFAULT_SLAVE_ADDR;
 
-    return 0;
-    
+    return 0;    
 }
 
 int Laser_Measure_Single(Laser_Device *device, Laser_Mode mode, float *distance) {
@@ -122,7 +117,7 @@ int Laser_Measure_Single(Laser_Device *device, Laser_Mode mode, float *distance)
     usleep(50000);  // Wait 50ms before reading
 
     // Read response
-    uint8_t response[12];
+    uint8_t response[9];
     int bytes_read = read(device->fd, response, sizeof(response));
     if (bytes_read <= 0) {
         fprintf(stderr, "No data received from sensor.\n");

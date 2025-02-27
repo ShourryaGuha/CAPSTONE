@@ -74,7 +74,7 @@ typedef struct
     // float last_valid_distance;      // Last valid measurement
     // time_t last_measurement_time;   // Timestamp of last measurement
     // Laser_Status last_status;       // Last status read
-    float distance;  //measured distance
+    // float distance;  //measured distance
 } Laser_Device;
 
 // Function prototypes

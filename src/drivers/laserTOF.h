@@ -6,7 +6,7 @@
 
 // Constants
 #define UART2_DEVICE "/dev/ttyAMA2"  //confirmed it corresponds to uart2 gpio 0 and 1   // J3 on pi
-#define UART3_DEVICE "/dev/ttyAMA3"   //confirmed it corresponds to uart2 gpio 4 and 5   // J1 on pi
+#define UART3_DEVICE "/dev/ttyAMA3"   //confirmed it corresponds to uart3 gpio 4 and 5   // J1 on pi
 #define BAUD_RATE B115200
 #define MAX_BUFFER_SIZE 32
 #define DEFAULT_SLAVE_ADDR 0x00

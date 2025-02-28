@@ -76,7 +76,7 @@ int Laser_Init(Laser_Device *device) {
     // Clear input buffer
     tcflush(device->fd, TCIFLUSH);
 
-    printf("Opened UART device: %s at baud rate: %d\n", device->device_path, BAUD_RATE);
+    printf("Opened UART device: %s at baud rate: %d\n", device->device_path, 115200);
 
     device->address = DEFAULT_SLAVE_ADDR;
 

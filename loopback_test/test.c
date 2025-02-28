@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <termios.h>
 
-#define SERIAL_PORT_PATH        "/dev/ttyAMA2"
+#define SERIAL_PORT_PATH        "/dev/ttyAMA3"
 
 struct termios g_tty;
 int g_fd;

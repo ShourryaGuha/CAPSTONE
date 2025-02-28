@@ -8,6 +8,9 @@
 #include <stdint.h>
 #include <time.h>
 #include "laserTOF.h"
+#include <signal.h>
+
+volatile sig_atomic_t keep_running = 1;
 
 // 0xFA 0X01 0XFF 0X04 0X01 0X00 0X01 0X00 0X00   single measurement
 // 0xFA 0X01 0XFF 0X04 0X01 0X00 0X00 0X00 0XFF  continuous measurement
@@ -27,6 +30,7 @@ static int file_open_and_get_descriptor(const char *fname) {
 
 
 static int parse_measurement(uint8_t *response, float *distance);
+static void signal_handler(int signal);
 
 int Laser_Init(Laser_Device *device) {
     device->fd = file_open_and_get_descriptor(device->device_path);
@@ -126,9 +130,52 @@ int Laser_Measure_Single(Laser_Device *device) {
     return 0;
 }
 
+/**
+ * Handle SIGINT (Ctrl+C)
+ */
+static void signal_handler(int signal) {
+    if (signal == SIGINT) {
+        printf("\nStopping measurement...\n");
+        keep_running = 0;
+    }
+}
+
 
 int Laser_Measure_Continuous(Laser_Device *device) {
-    
+    uint8_t cmd[] = {
+        0xFA,  // MsgType
+        0x01,  // MsgCode
+        0xFF,  // DeviceID default 0xff
+        0x04,  // Length
+        0x01,  // start measurement 01, stop measurement 00
+        0x00,  // Payload   
+        0x01,  // single measurement 01, continuous measurement 00
+        0x00,  // Payload
+        0x00   // Checksum
+    };
+
+    // Set up signal handler for Ctrl+C
+    signal(SIGINT, signal_handler);
+
+    if (write(device->fd, cmd, sizeof(cmd)) != sizeof(cmd)) {
+        fprintf(stderr, "Error: Failed to send measurement command\n");
+        return -1;
+    }
+
+    sleep(1);
+
+    while(keep_running) {
+        uint8_t response[9];
+        int bytes_read = read(device->fd, response, sizeof(response));
+        if (bytes_read <= 0) {
+            fprintf(stderr, "No data received from sensor.\n");
+            return -1;
+        }
+        parse_measurement(response, &(device->distance));
+        //print distance in metres
+        printf("Distance: %.2f m\n", device->distance);
+    }
+
 }
 
 int Laser_stop_continuous(Laser_Device *device) {

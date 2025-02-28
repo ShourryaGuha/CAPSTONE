@@ -43,6 +43,8 @@ typedef struct
 // Function prototypes
 int Laser_Init(Laser_Device *device);
 int Laser_Measure_Single(Laser_Device *device);
+int Laser_stop_continuous(Laser_Device *device);
+int Laser_Measure_Continuous(Laser_Device *device);
 // int Laser_ReadStatus(Laser_Device *device);
 // int Stop_Continuous(Laser_Device *device);
 // void init_both_sensors(Laser_Device *sensor1, Laser_Device *sensor2);

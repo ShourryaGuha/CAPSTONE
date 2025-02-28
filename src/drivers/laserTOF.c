@@ -121,11 +121,36 @@ int Laser_Measure_Single(Laser_Device *device) {
     // }
 
     //print distance in metres
-
     printf("Distance: %.2f m\n", device->distance);
 
     return 0;
 }
+
+
+int Laser_Measure_Continuous(Laser_Device *device) {
+    
+}
+
+int Laser_stop_continuous(Laser_Device *device) {
+    uint8_t cmd[] = {
+        0xFA,  // MsgType
+        0x01,  // MsgCode
+        0xFF,  // DeviceID default 0xff
+        0x04,  // Length
+        0x00,  // start measurement 01, stop measurement 00
+        0x00,  // Payload
+        0x00,  // Payload
+        0x00,  // Payload
+        0xFE   // Checksum
+    };
+
+    if (write(device->fd, cmd, sizeof(cmd)) != sizeof(cmd)) {
+        fprintf(stderr, "Error: Failed to send stop command \n");
+        return -1;
+    }
+
+}
+
 
 static int parse_measurement(uint8_t *response, float *distance) {
     uint16_t check_sum = 0;

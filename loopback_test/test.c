@@ -8,7 +8,10 @@
 #include <unistd.h>
 #include <termios.h>
 
-#define SERIAL_PORT_PATH        "/dev/ttyAMA3"
+// loop a jumper wire from gpio 0 to gpio 1 or gpio 4 to 5 and run this code to test the loopback and uart working
+
+#define SERIAL_PORT_PATH        "/dev/ttyAMA3" //for gpio 4 and 5 
+#define SERIAL_PORT_PATH        "/dev/ttyAMA2" //for gpio 0 and 1 
 
 struct termios g_tty;
 int g_fd;

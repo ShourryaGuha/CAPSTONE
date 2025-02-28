@@ -25,6 +25,9 @@ static int file_open_and_get_descriptor(const char *fname) {
     return fd;
 }
 
+
+static int parse_measurement(uint8_t *response, float *distance);
+
 int Laser_Init(Laser_Device *device) {
     device->fd = file_open_and_get_descriptor(device->device_path);
 
@@ -83,7 +86,7 @@ int Laser_Init(Laser_Device *device) {
     return 0; 
 }
 
-int Laser_Measure_Single(Laser_Device *device, Laser_Mode mode, float *distance) {
+int Laser_Measure_Single(Laser_Device *device) {
     uint8_t cmd[] = {
         0xFA,  // MsgType
         0x01,  // MsgCode
@@ -110,9 +113,32 @@ int Laser_Measure_Single(Laser_Device *device, Laser_Mode mode, float *distance)
         return -1;
     }
 
-    for(uint8_t i=0; i < bytes_read; i++) {
-        printf("%02X ", response[i]);
+    parse_measurement(response, &(device->distance));
+
+    //print raw value for debugging
+    // for(uint8_t i=0; i < bytes_read; i++) {
+    //     printf("%02X ", response[i]);
+    // }
+
+    //print distance in metres
+
+    printf("Distance: %.2f m\n", device->distance);
+
+    return 0;
+}
+
+static int parse_measurement(uint8_t *response, float *distance) {
+    uint16_t check_sum = 0;
+    for(int i = 0; i < 8; i++) {
+        check_sum += response[i];
+    }
+    // Check if check_sum is equal to the last 8 bits of response[9]
+    if ((check_sum & 0xFF) != response[8]) {
+        printf("Checksum is invalid.\n");
+        return -1;
     }
 
+    uint16_t distance_decimeters = (response[7] << 8) | response[6];
+    *distance = distance_decimeters / 10.0f;
     return 0;
 }

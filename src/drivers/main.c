@@ -50,9 +50,9 @@ int main() {
         fprintf(stderr, "Failed to initialize sensor 1\n");
         return 1;
     }
-    float distance;
+    // float distance;
 
-    Laser_Measure_Single(&sensor1, MODE_AUTO_1_SHOT, &distance);
+    Laser_Measure_Single(&sensor1);
 
     return 0;
 }

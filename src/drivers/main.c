@@ -14,9 +14,15 @@ int main() {
     while (1) {
         spin_bpm();
         usleep(500000); // Delay for 500 ms
-    }
-    
     terminate_bmp_connection();
+
+    // //GPS CODE
+    // gps_init();
+    // while(1) {
+    //     spin_gps();
+    //     usleep(10000);
+    //     test_final_values();
+    // }
 
     //IMU CODE
     // mpu6050_init();

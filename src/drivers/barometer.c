@@ -66,14 +66,6 @@ void init_bpm180_data(BMP180Calib *bmp_calib, BMP180Data *bmp_data) {
     memset(bmp_data, 0, sizeof(BMP180Data));
 }
 
-// Initialize BPM180
-void bpm180_init() {
-    const char *i2c_device = "/dev/i2c-1";
-    i2c_open_device(i2c_device, BMP180_ADDR);
-    init_bpm180_data(&bmp_calib, &bmp_data);
-    bmp180_read_calibration();
-}
-
 // --- BMP180 Calibration Functions ---
 
 // Read 22 bytes of calibration data from registers 0xAA to 0xBF
@@ -227,6 +219,15 @@ void spin_bpm() {
 void terminate_bmp_connection() {
     close(bmp_fd);
 }
+
+// Initialize BPM180
+void bpm180_init() {
+    const char *i2c_device = "/dev/i2c-1";
+    i2c_open_device(i2c_device, BMP180_ADDR);
+    init_bpm180_data(&bmp_calib, &bmp_data);
+    bmp180_read_calibration();
+}
+
 
 // int main() {
     

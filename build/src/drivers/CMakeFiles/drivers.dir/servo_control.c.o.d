@@ -1,5 +1,5 @@
 src/drivers/CMakeFiles/drivers.dir/servo_control.c.o: \
- /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/servo_control.c \
+ /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/src/drivers/servo_control.c \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/aarch64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \

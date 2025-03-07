@@ -12,7 +12,7 @@
 #define BMP180_ADDR 0x77
 
 // Oversampling setting (0 to 3). 0 gives the fastest reading.
-#define OSS 0
+#define OSS 2
 
 // Structure to hold calibration coefficients from the BMP180
 typedef struct {
@@ -175,7 +175,7 @@ void parse_bpm180_data(BMP180Data *data) {
     X1 = (bmp_calib.B2 * ((B6 * B6) >> 12)) >> 11;
     X2 = (bmp_calib.AC2 * B6) >> 11;
     int32_t X3 = X1 + X2;
-    int32_t B3 = ((((int32_t)bmp_calib.AC1) * 4 + X3) << OSS  + 2) >> 2;
+    int32_t B3 = (((((int32_t)bmp_calib.AC1) * 4 + X3) << OSS) + 2) >> 2;  // Corrected line
     X1 = (bmp_calib.AC3 * B6) >> 13;
     X2 = (bmp_calib.B1 * ((B6 * B6) >> 12)) >> 16;
     X3 = ((X1 + X2) + 2) >> 2;
@@ -191,6 +191,7 @@ void parse_bpm180_data(BMP180Data *data) {
     X1 = (X1 * 3038) >> 16;
     X2 = (-7357 * p) >> 16;
     p = p + ((X1 + X2 + 3791) >> 4);
+
     
     // Convert pressure from Pa to hPa
     float pressure = p / 100.0;
@@ -198,14 +199,14 @@ void parse_bpm180_data(BMP180Data *data) {
     // Calculate altitude using the barometric formula
     float altitude = 44330.0 * (1.0 - pow(pressure / 1013.25, 0.1903));
     
-    data->pressure = pressure;
+    data->pressure = pressure * 100.0;
     data->altitude = altitude;
 }
 
 // Print only pressure and altitude data
 void print_bmp180_data(const BMP180Data *data) {
     printf("BMP180:\n");
-    printf("  Pressure: %f hPa\n", data->pressure);
+    printf("  Pressure: %f Pa\n", data->pressure);
     printf("  Altitude: %f m\n", data->altitude);
 }
 

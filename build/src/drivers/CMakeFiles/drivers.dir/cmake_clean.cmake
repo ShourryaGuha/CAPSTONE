@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/drivers.dir/barometer.c.o"
+  "CMakeFiles/drivers.dir/barometer.c.o.d"
   "CMakeFiles/drivers.dir/gps.c.o"
   "CMakeFiles/drivers.dir/gps.c.o.d"
   "CMakeFiles/drivers.dir/main.c.o"

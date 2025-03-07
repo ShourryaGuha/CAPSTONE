@@ -5,6 +5,8 @@
 #include "barometer.h"
 #include "imu.c"
 #include "transmitter.h"
+#include "laserTOF.h"
+
 
 int main() {
     bpm180_init();
@@ -33,6 +35,18 @@ int main() {
     // }
 
     // terminate_imu_connection();
+
+    //LASER TOF CODE
+    // Laser_Device sensor1;
+    
+    // sensor1.device_path = UART2_DEVICE;
+    // if (Laser_Init(&sensor1) != 0) {
+    //     fprintf(stderr, "Failed to initialize sensor 1\n");
+    //     return 1;
+    // }
+    // // float distance;
+
+    // Laser_Measure_Single(&sensor1);
 
     //TRANSMITTER CODE
     // // Initialize the NRF24L01+ module.
@@ -67,4 +81,5 @@ int main() {
     // terminate_transmitter();
     
     // return 0;
+    return 0;
 }

@@ -12,49 +12,51 @@ int main() {
     initializeSolenoid();
 
     // Release the solenoid for 3 seconds
-    printf("Releasing solenoid...\n");
-    releaseSolenoid();
-    sleep(3);  // Wait for 3 seconds
+    while(1){
+        printf("Releasing solenoid...\n");
+        releaseSolenoid();
+        sleep(3);  // Wait for 3 seconds
 
-    // Re-engage the solenoid
-    printf("Engaging solenoid...\n");
-    engageSolenoid();
-
-    // Initialize two servo motors
-    servo_t servo1, servo2;
-    if (servo_init(&servo1, PWM0_GPIO) < 0) {
-        fprintf(stderr, "Failed to initialize servo 1\n");
-        return -1;
+        // Re-engage the solenoid
+        printf("Engaging solenoid...\n");
+        engageSolenoid();
+        sleep(3);
     }
-    if (servo_init(&servo2, PWM1_GPIO) < 0) {
-        fprintf(stderr, "Failed to initialize servo 2\n");
-        servo_cleanup(&servo1);
-        return -1;
-    }
+    // // Initialize two servo motors
+    // servo_t servo1, servo2;
+    // if (servo_init(&servo1, PWM0_GPIO) < 0) {
+    //     fprintf(stderr, "Failed to initialize servo 1\n");
+    //     return -1;
+    // }
+    // if (servo_init(&servo2, PWM1_GPIO) < 0) {
+    //     fprintf(stderr, "Failed to initialize servo 2\n");
+    //     servo_cleanup(&servo1);
+    //     return -1;
+    // }
 
-    // Move both servos to 25 degrees
-    if (servo_set_angle(&servo1, 25.0f) < 0) {
-        fprintf(stderr, "Failed to set angle for servo 1\n");
-    }
-    if (servo_set_angle(&servo2, 25.0f) < 0) {
-        fprintf(stderr, "Failed to set angle for servo 2\n");
-    }
+    // // Move both servos to 25 degrees
+    // if (servo_set_angle(&servo1, 25.0f) < 0) {
+    //     fprintf(stderr, "Failed to set angle for servo 1\n");
+    // }
+    // if (servo_set_angle(&servo2, 25.0f) < 0) {
+    //     fprintf(stderr, "Failed to set angle for servo 2\n");
+    // }
 
-    // Simulate some delay to observe servo movement
-    sleep(2);
+    // // Simulate some delay to observe servo movement
+    // sleep(2);
 
-    // Cleanup resources
-    servo_cleanup(&servo1);
-    servo_cleanup(&servo2);
+    // // Cleanup resources
+    // servo_cleanup(&servo1);
+    // servo_cleanup(&servo2);
 
-    printf("Servos probably successful\n");
+    // printf("Servos probably successful\n");
 
-    gps_init();
-    while(1) {
-        spin_gps();
-        usleep(10000);
-        test_final_values();
-    }
-    terminate_connection();
-    return 0;
+    // gps_init();
+    // while(1) {
+    //     spin_gps();
+    //     usleep(10000);
+    //     test_final_values();
+    // }
+    // terminate_connection();
+    // return 0;
 }

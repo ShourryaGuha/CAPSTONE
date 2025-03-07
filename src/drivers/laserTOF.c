@@ -149,10 +149,11 @@ int Laser_Measure_Continuous(Laser_Device *device) {
         0x04,  // Length
         0x01,  // start measurement 01, stop measurement 00
         0x00,  // Payload   
-        0x01,  // single measurement 01, continuous measurement 00
+        0x00,  // single measurement 01, continuous measurement 00
         0x00,  // Payload
-        0x00   // Checksum
+        0xFF   // Checksum
     };
+    // 0xFA 0X01 0XFF 0X04 0X01 0X00 0X00 0X00 0XFF
 
     // Set up signal handler for Ctrl+C
     signal(SIGINT, signal_handler);
@@ -167,10 +168,10 @@ int Laser_Measure_Continuous(Laser_Device *device) {
     while(keep_running) {
         uint8_t response[9];
         int bytes_read = read(device->fd, response, sizeof(response));
-        if (bytes_read <= 0) {
-            fprintf(stderr, "No data received from sensor.\n");
-            return -1;
-        }
+        // if (bytes_read <= 0) {
+        //     fprintf(stderr, "No data received from sensor.\n");
+        //     return -1;
+        // }
         parse_measurement(response, &(device->distance));
         //print distance in metres
         printf("Distance: %.2f m\n", device->distance);

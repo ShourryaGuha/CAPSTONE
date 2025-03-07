@@ -44,6 +44,7 @@ int main() {
     // terminate_connection();
 
     Laser_Device sensor1;
+    // Laser Device sensor2;
     
     sensor1.device_path = UART2_DEVICE;
     if (Laser_Init(&sensor1) != 0) {
@@ -52,7 +53,12 @@ int main() {
     }
     // float distance;
 
-    Laser_Measure_Single(&sensor1);
+    Laser_Measure_Continuous(&sensor1);
+
+
+    // Laser_stop_continuous(&sensor1);
+
+    // Laser_Measure_Single(&sensor1);
 
     return 0;
 }

@@ -32,8 +32,8 @@ typedef struct {
 
 // Utility functions
 void bpm180_init(void);
-void i2c_open_device(const char *device, int addr);
-int16_t combine_bytes(uint8_t msb, uint8_t lsb);
+static void i2c_open_device(const char *device, int addr);
+static int16_t combine_bytes(uint8_t msb, uint8_t lsb);
 
 // BMP180 Operations
 void init_bmp180_data(BMP180Calib *bmp_calib, BMP180Data *bmp_data);
@@ -42,7 +42,7 @@ int16_t bmp180_read_raw_temperature(void);
 int32_t bmp180_read_raw_pressure(void);
 void parse_bmp180_data(BMP180Data *data);
 void print_bmp180_data(const BMP180Data *data);
-void spin_bpm(void);
+BMP180Data* spin_bpm(void);
 void terminate_bmp_connection(void);
 
 #endif // BAROMETER_H

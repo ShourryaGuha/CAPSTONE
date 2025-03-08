@@ -311,12 +311,13 @@ void gps_init() {
     init_queue();
 }
 
-void spin_gps() {
+GPSData* spin_gps() {
     int bytesRead = read_gps_data(buffer, GPS_BUFFER_SIZE);
     if (bytesRead > 0) {
         parse_gps_data(&gps_data, buffer);
         enqueue(&gps_data);
     }
+    return &gps_data;
 }
 
 void test_read() {

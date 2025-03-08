@@ -42,7 +42,7 @@ static int bmp_fd = -1;
 // --- Utility functions ---
 
 // Open the I2C device and set the slave address
-void i2c_open_device(const char *device, int addr) {
+static void i2c_open_device(const char *device, int addr) {
     bmp_fd = open(device, O_RDWR);
     if (bmp_fd < 0) {
         perror("Error opening I2C device");
@@ -56,7 +56,7 @@ void i2c_open_device(const char *device, int addr) {
 }
 
 // Combine two 8-bit values into a signed 16-bit value
-int16_t combine_bytes(uint8_t msb, uint8_t lsb) {
+static int16_t combine_bytes(uint8_t msb, uint8_t lsb) {
     return (int16_t)((msb << 8) | lsb);
 }
 
@@ -210,9 +210,10 @@ void print_bmp180_data(const BMP180Data *data) {
 }
 
 // High-level function to perform a complete sensor read and display the results
-void spin_bpm() {
+BMP180Data* spin_bpm() {
     parse_bpm180_data(&bmp_data);
     print_bmp180_data(&bmp_data);
+    return &bmp_data;
 }
 
 // Close the I2C connection for BMP180

@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 199309L
+
 // main.c
 #include <stdio.h>
 #include <unistd.h>
@@ -12,7 +14,9 @@
 #include "imu.h"
 #include "laserTOF.h"
 #include "timestamped_buffer.h"
-#include <linux/time.h>
+#include <sys/time.h>
+#include <time.h>
+
 
 // Global variable for the buffer (in shared memory)
 SensorBuffer* g_sensor_buffer;
@@ -30,7 +34,7 @@ void read_barometer(SensorBuffer* buffer) {
     BMP180Data baro_data;
     
     // Get barometer data
-    baro_data = get_bmp180_data();  // Function to read barometer data
+    baro_data = *spin_bpm();  // Function to read barometer data
     
     // Fill the packet
     clock_gettime(CLOCK_REALTIME, &packet.timestamp);
@@ -46,7 +50,7 @@ void read_gps(SensorBuffer* buffer) {
     GPSData gps_data;
     
     // Get GPS data
-    gps_data = get_gps_data();  // Function to read GPS data
+    gps_data = *spin_gps();  // Function to read GPS data
     
     // Fill the packet
     clock_gettime(CLOCK_REALTIME, &packet.timestamp);
@@ -62,7 +66,7 @@ void read_imu(SensorBuffer* buffer) {
     MPU6050Data imu_data;
     
     // Get IMU data
-    imu_data = get_mpu6050_data();  // Function to read IMU data
+    imu_data = *spin_imu();  // Function to read IMU data
     
     // Fill the packet
     clock_gettime(CLOCK_REALTIME, &packet.timestamp);
@@ -91,39 +95,13 @@ void read_laser(SensorBuffer* buffer, Laser_Device* sensor) {
     }
 }
 
-// Create functions that should be defined elsewhere
-BMP180Data get_bmp180_data() {
-    BMP180Data data;
-    // Assume spin_bpm() updates global variables we can access here
-    spin_bpm();
-    // Get the updated values
-    data.pressure = get_pressure();
-    data.altitude = calculate_altitude(data.pressure);
-    return data;
-}
-
-GPSData get_gps_data() {
-    GPSData data;
-    // Assume spin_gps() updates global variables we can access here
-    spin_gps();
-    // Get the updated values
-    // This would be implementation-specific based on your GPS interface
-    return data;
-}
-
-MPU6050Data get_mpu6050_data() {
-    MPU6050Data data;
-    // Assume spin_imu() updates global variables we can access here
-    spin_imu();
-    // Get the updated values
-    // This would be implementation-specific based on your IMU interface
-    return data;
-}
-
 int main() {
     // Set up signal handling for graceful shutdown
     signal(SIGINT, handle_signal);
     signal(SIGTERM, handle_signal);
+
+    // for usleep alternative
+    struct timespec ts;
     
     // Initialize shared memory for the buffer
     int fd = shm_open("/sensor_buffer", O_CREAT | O_RDWR, 0666);
@@ -153,7 +131,7 @@ int main() {
     mpu6050_init();
     
     Laser_Device laser_sensor;
-    laser_sensor.device_path = UART2_DEVICE;
+    laser_sensor.device_path = UART3_DEVICE;
     if (Laser_Init(&laser_sensor) != 0) {
         fprintf(stderr, "Failed to initialize laser sensor\n");
         return 1;
@@ -167,8 +145,9 @@ int main() {
         read_imu(g_sensor_buffer);
         read_laser(g_sensor_buffer, &laser_sensor);
         
-        // Sleep a short while to avoid CPU overuse
-        usleep(10000);  // 10ms
+        ts.tv_sec = 0;
+        ts.tv_nsec = 10000 * 1000;  // Convert 10000 microseconds to nanoseconds
+        nanosleep(&ts, NULL);
     }
     
     // Clean up

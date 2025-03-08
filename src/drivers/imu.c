@@ -25,7 +25,7 @@ static MPU6050Data mpu_data;
 static int fd = -1;
 
 // --- Utility functions ---
-void i2c_open_device(const char *device, int addr) {
+static void i2c_open_device(const char *device, int addr) {
     fd = open(device, O_RDWR);
     if (fd < 0) {
         perror("Error opening I2C device");
@@ -37,7 +37,7 @@ void i2c_open_device(const char *device, int addr) {
     }
 }
 
-int16_t combine_bytes(uint8_t msb, uint8_t lsb) {
+static int16_t combine_bytes(uint8_t msb, uint8_t lsb) {
     return (int16_t)((msb << 8) | lsb);
 }
 
@@ -91,12 +91,12 @@ void print_mpu6050_data(const MPU6050Data *mpu_data) {
     printf("  Gyroscope:    x=%f °/s, y=%f °/s, z=%f °/s\n", mpu_data->gx, mpu_data->gy, mpu_data->gz);
 }
 
-void spin_imu() {
+MPU6050Data * spin_imu() {
     uint8_t buffer[14];
     read_mpu6050_data(buffer);
     parse_mpu6050_data(&mpu_data, buffer);
     print_mpu6050_data(&mpu_data);
-    
+    return &mpu_data;
 }
 
 void terminate_imu_connection() {

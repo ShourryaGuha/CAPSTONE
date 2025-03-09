@@ -10,6 +10,8 @@
 #include "laserTOF.h"
 #include <signal.h>
 
+// #define DEBUG
+
 volatile sig_atomic_t keep_running = 1;
 
 // 0xFA 0X01 0XFF 0X04 0X01 0X00 0X01 0X00 0X00   single measurement
@@ -125,7 +127,9 @@ int Laser_Measure_Single(Laser_Device *device) {
     // }
 
     //print distance in metres
-    printf("Distance: %.2f m\n", device->distance);
+    #ifdef DEBUG
+        printf("Distance: %.2f m\n", device->distance);
+    #endif
 
     return 0;
 }

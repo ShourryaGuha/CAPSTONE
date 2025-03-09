@@ -2,40 +2,29 @@
 
 import mmap
 import struct
-import ctypes
-import csv
-import time
 import os
 import signal
+import time
 import datetime
-from ctypes import Structure, c_double, c_float, c_int, c_long, Array, sizeof
+import ctypes
+from ctypes import Structure, c_int, c_float, c_double, Array, POINTER
 
 # Flag for graceful shutdown
 running = True
 
 def signal_handler(sig, frame):
     global running
-    print("Shutting down logger...")
+    print("Python logger: Shutting down...")
     running = False
 
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-# Define structures to match the C code
-class Timespec(Structure):
+# Define structures for sensor data matching the C structures
+class BMP180Data(Structure):
     _fields_ = [
-        ("tv_sec", c_long),
-        ("tv_nsec", c_long)
-    ]
-
-class MPU6050Data(Structure):
-    _fields_ = [
-        ("ax", c_float),
-        ("ay", c_float),
-        ("az", c_float),
-        ("gx", c_float),
-        ("gy", c_float),
-        ("gz", c_float)
+        ("pressure", c_float),    # in hPa
+        ("altitude", c_float)     # in meters (calculated)
     ]
 
 class GPSData(Structure):
@@ -52,46 +41,28 @@ class GPSData(Structure):
         ("accel_z", c_double)
     ]
 
-class BMP180Data(Structure):
+class MPU6050Data(Structure):
     _fields_ = [
-        ("pressure", c_float),
-        ("altitude", c_float)
+        ("ax", c_float),
+        ("ay", c_float),
+        ("az", c_float),
+        ("gx", c_float),
+        ("gy", c_float),
+        ("gz", c_float)
     ]
 
-class Measurement(Structure):
+class SensorSuite(Structure):
     _fields_ = [
-        ("distance", c_float),
-        ("timestamp", Timespec)
-    ]
-
-class SensorPacket(Structure):
-    _fields_ = [
-        ("timestamp", Timespec),
-        ("imu_data", MPU6050Data),
-        ("gps_data", GPSData),
         ("baro_data", BMP180Data),
-        ("laser_data", Measurement),
-        ("sensors_present", c_int)
+        ("gps_data", GPSData),
+        ("imu_data", MPU6050Data),
+        ("distance", c_float),
+        ("delta_t", c_double),
+        # Skip mutex in Python as we're only reading
+        ("_mutex_padding", c_int * 10)  # Padding for the mutex (approximate)
     ]
 
-# sensor buffer size: 16112
 BUFFER_SIZE = 100
-SENSOR_BUFFER_SIZE = 16112
-
-class SensorBuffer(Structure):
-    _fields_ = [
-        ("buffer", SensorPacket * BUFFER_SIZE),
-        ("write_index", c_int),
-        ("read_index", c_int),
-        ("count", c_int),
-        # Note: Mutex and condition variables can't be accessed from Python
-        # We'll use the count and indices for synchronization in a simple way
-        ("_mutex_padding", c_long * 10),
-        ("_cond_padding", c_long * 10)
-    ]
-
-def timespec_to_datetime(ts):
-    return datetime.datetime.fromtimestamp(ts.tv_sec + ts.tv_nsec / 1e9)
 
 def main():
     # Wait for the shared memory to be created by the C program
@@ -99,135 +70,108 @@ def main():
     retries = 0
     
     # This is the path where POSIX shared memory objects appear in Linux
-    shm_path = "/dev/shm/sensor_buffer"
+    shm_path = "/dev/shm/simple_counter"
     
     # Wait for the shared memory file to exist
     while retries < max_retries and running:
         if os.path.exists(shm_path):
             break
-        print(f"Waiting for shared memory to be created... ({retries+1}/{max_retries})")
+        print(f"Python logger: Waiting for shared memory to be created... ({retries+1}/{max_retries})")
         retries += 1
-        time.sleep(1)  # Wait 1 second before retrying
+        time.sleep(1)
     
     if retries >= max_retries:
-        print("Failed to find shared memory after multiple attempts")
+        print("Python logger: Failed to find shared memory after multiple attempts")
         return
     
     try:
-        # Open the shared memory file directly
+        # Open the shared memory file
         fd = os.open(shm_path, os.O_RDWR)
-        print(f"Successfully opened shared memory at {shm_path}")
+        print(f"Python logger: Successfully opened shared memory at {shm_path}")
         
         # Memory map the shared memory segment
-        shared_mem = mmap.mmap(fd, SENSOR_BUFFER_SIZE, mmap.MAP_SHARED, mmap.PROT_READ)
+        shared_mem_size = ctypes.sizeof(SensorSuite) * BUFFER_SIZE
+        shared_mem = mmap.mmap(fd, shared_mem_size, mmap.MAP_SHARED, mmap.PROT_READ)
         
-        # Create a CSV file for logging
+        # Create a log file
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        csv_filename = f"sensor_data.csv"
+        log_filename = f"sensor_log.csv"
         
-        with open(csv_filename, 'w', newline='') as csvfile:
-            # Create the CSV writer with all possible fields
-            fieldnames = [
-                'timestamp', 
-                # IMU fields
-                'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz',
-                # GPS fields 
-                'gps_lat', 'gps_lon', 'gps_height', 'gps_utc', 
-                'gps_vel_x', 'gps_vel_y', 'gps_vel_z',
-                'gps_accel_x', 'gps_accel_y', 'gps_accel_z',
-                # Barometer fields
-                'baro_pressure', 'baro_altitude',
-                # Laser TOF fields
-                'laser_distance', 'laser_timestamp'
-            ]
+        with open(log_filename, 'w') as logfile:
+            # Write CSV header with correctly named fields
+            logfile.write("timestamp,delta_t,")
+            logfile.write("pressure,altitude,")
+            logfile.write("latitude,longitude,height,utc_time,")
+            logfile.write("velocity_x,velocity_y,velocity_z,")
+            logfile.write("gps_accel_x,gps_accel_y,gps_accel_z,")
+            logfile.write("imu_ax,imu_ay,imu_az,imu_gx,imu_gy,imu_gz,")
+            logfile.write("distance\n")
             
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
+            last_delta_t = -1
             
-            last_read_index = 0
-            
-            print(f"Logging data to {csv_filename}")
+            print(f"Python logger: Logging sensor values to {log_filename}")
             
             while running:
-                # Read the buffer's metadata
+                # Read just the first element for now
                 shared_mem.seek(0)
+                sensor_data_bytes = shared_mem.read(ctypes.sizeof(SensorSuite))
                 
-                # Extract write_index, read_index, and count
-                buffer_info = struct.unpack('iii', shared_mem.read(12))
-                write_index = buffer_info[0]
-                count = buffer_info[2]
+                # Create a SensorSuite instance from the bytes
+                sensor_data = SensorSuite.from_buffer_copy(sensor_data_bytes)
                 
-                if count > 0:
-                    # There's data to read
-                    while last_read_index != write_index and running:
-                        # Calculate the offset to the sensor packet
-                        packet_offset = 40 + (last_read_index * sizeof(SensorPacket))  # 40 bytes for buffer metadata
-                        shared_mem.seek(packet_offset)
-                        
-                        # Read the sensor packet
-                        packet_data = shared_mem.read(sizeof(SensorPacket))
-                        
-                        # Create a sensor packet from the raw data
-                        packet = SensorPacket.from_buffer_copy(packet_data)
-                        
-                        # Create the row data
-                        row = {'timestamp': timespec_to_datetime(packet.timestamp).isoformat()}
-                        
-                        # Check which sensors are present and add their data
-                        if packet.sensors_present & 0x01:  # IMU_PRESENT
-                            row.update({
-                                'imu_ax': packet.imu_data.ax,
-                                'imu_ay': packet.imu_data.ay,
-                                'imu_az': packet.imu_data.az,
-                                'imu_gx': packet.imu_data.gx,
-                                'imu_gy': packet.imu_data.gy,
-                                'imu_gz': packet.imu_data.gz
-                            })
-                        
-                        if packet.sensors_present & 0x02:  # GPS_PRESENT
-                            row.update({
-                                'gps_lat': packet.gps_data.latitude,
-                                'gps_lon': packet.gps_data.longitude,
-                                'gps_height': packet.gps_data.height,
-                                'gps_utc': packet.gps_data.utc_time,
-                                'gps_vel_x': packet.gps_data.velocity_x,
-                                'gps_vel_y': packet.gps_data.velocity_y,
-                                'gps_vel_z': packet.gps_data.velocity_z,
-                                'gps_accel_x': packet.gps_data.accel_x,
-                                'gps_accel_y': packet.gps_data.accel_y,
-                                'gps_accel_z': packet.gps_data.accel_z
-                            })
-                        
-                        if packet.sensors_present & 0x04:  # BARO_PRESENT
-                            row.update({
-                                'baro_pressure': packet.baro_data.pressure,
-                                'baro_altitude': packet.baro_data.altitude
-                            })
-                        
-                        if packet.sensors_present & 0x08:  # LASER_PRESENT
-                            laser_ts = timespec_to_datetime(packet.laser_data.timestamp).isoformat()
-                            row.update({
-                                'laser_distance': packet.laser_data.distance,
-                                'laser_timestamp': laser_ts
-                            })
-                        
-                        # Write the row to the CSV
-                        writer.writerow(row)
-                        csvfile.flush()  # Ensure data is written to disk
-                        
-                        # Update the read index
-                        last_read_index = (last_read_index + 1) % BUFFER_SIZE
+                # Only log if the data has changed (using delta_t as indicator)
+                if sensor_data.delta_t != last_delta_t:
+                    # Get current timestamp for the log
+                    timestamp = datetime.datetime.now().isoformat()
+                    
+                    # Format all data as CSV row
+                    log_row = (
+                        f"{timestamp},{sensor_data.delta_t:.6f},"
+                        f"{sensor_data.baro_data.pressure:.2f},{sensor_data.baro_data.altitude:.2f},"
+                        f"{sensor_data.gps_data.latitude:.7f},{sensor_data.gps_data.longitude:.7f},"
+                        f"{sensor_data.gps_data.height:.2f},{sensor_data.gps_data.utc_time:.6f},"
+                        f"{sensor_data.gps_data.velocity_x:.4f},{sensor_data.gps_data.velocity_y:.4f},"
+                        f"{sensor_data.gps_data.velocity_z:.4f},"
+                        f"{sensor_data.gps_data.accel_x:.4f},{sensor_data.gps_data.accel_y:.4f},"
+                        f"{sensor_data.gps_data.accel_z:.4f},"
+                        f"{sensor_data.imu_data.ax:.4f},{sensor_data.imu_data.ay:.4f},"
+                        f"{sensor_data.imu_data.az:.4f},{sensor_data.imu_data.gx:.4f},"
+                        f"{sensor_data.imu_data.gy:.4f},{sensor_data.imu_data.gz:.4f},"
+                        f"{sensor_data.distance:.4f}\n"
+                    )
+                    
+                    logfile.write(log_row)
+                    logfile.flush()  # Ensure data is written to disk
+                    
+                    # Convert GPS UTC time to human-readable format (if it's in seconds since epoch)
+                    gps_time_str = "N/A"
+                    if sensor_data.gps_data.utc_time > 0:
+                        try:
+                            gps_time_str = datetime.datetime.fromtimestamp(
+                                sensor_data.gps_data.utc_time
+                            ).strftime('%H:%M:%S')
+                        except:
+                            gps_time_str = f"{sensor_data.gps_data.utc_time:.1f}"
+                    
+                    # Print summary to console
+                    print(f"Logger: t={sensor_data.delta_t:.2f}s, "
+                          f"Baro: {sensor_data.baro_data.pressure:.1f}hPa/{sensor_data.baro_data.altitude:.1f}m, "
+                          f"GPS: ({sensor_data.gps_data.latitude:.5f}, {sensor_data.gps_data.longitude:.5f}, "
+                          f"{sensor_data.gps_data.height:.1f}m), "
+                          f"Distance: {sensor_data.distance:.2f}m")
+                    
+                    last_delta_t = sensor_data.delta_t
                 
                 # Sleep a short while to avoid busy waiting
-                time.sleep(0.01)  # 10ms
+                # time.sleep(0.001)
         
         # Clean up
         shared_mem.close()
         os.close(fd)
-        print(f"Logger shutdown complete. Data saved to {csv_filename}")
+        print(f"Python logger: Shutdown complete. Data saved to {log_filename}")
         
     except Exception as e:
-        print(f"Error in logger: {str(e)}")
+        print(f"Python logger: Error: {str(e)}")
 
 if __name__ == "__main__":
     main()

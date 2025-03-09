@@ -8,6 +8,8 @@
 #include <math.h>
 #include <string.h>
 
+// #define DEBUG
+
 // I2C address for MPU6050
 #define MPU6050_ADDR 0x68
 
@@ -95,7 +97,9 @@ MPU6050Data * spin_imu() {
     uint8_t buffer[14];
     read_mpu6050_data(buffer);
     parse_mpu6050_data(&mpu_data, buffer);
-    print_mpu6050_data(&mpu_data);
+    #ifdef DEBUG
+        print_mpu6050_data(&mpu_data);
+    #endif
     return &mpu_data;
 }
 

@@ -1,6 +1,3 @@
-// main.c with simplified buffer
-#define _POSIX_C_SOURCE 199309L
-
 #include <stdio.h>
 #include <unistd.h>
 #include <pigpio.h>
@@ -16,107 +13,81 @@
 #include "barometer.h"
 #include "imu.h"
 #include "laserTOF.h"
-#include "timestamped_buffer.h"
 
-// Global variable for the buffer (in shared memory)
-SensorBuffer* g_sensor_buffer;
+
+#define DEBUG
+
+#define BUFFER_SIZE 100
+
+typedef struct{
+    BMP180Data baro_data;
+    GPSData gps_data;
+    MPU6050Data imu_data;
+    float distance;
+    double delta_t;
+    pthread_mutex_t mutex;
+}SensorSuite;
+
+//SHARED MEMORY------------------------------------------------
+// Define a simple shared memory structure with just a counter
+typedef struct {
+    int counter;
+    pthread_mutex_t mutex;
+} SharedCounter;
+
+// Global variable for shared memory
+SensorSuite* g_shared_buffer;
 volatile int running = 1;
 
 // Signal handler for graceful shutdown
 void handle_signal(int sig) {
-    printf("Shutting down...\n");
+    printf("C program: Shutting down...\n");
     running = 0;
 }
 
-// Function to read barometer and update buffer
-void read_barometer(SensorBuffer* buffer) {
-    SensorData data = {0};
-    BMP180Data baro_data;
+#ifdef DEBUG
+void print_sensor_suite(const SensorSuite* s) {
+    printf("===== SensorSuite Data =====\n");
     
-    // Get barometer data
-    baro_data = *spin_bpm();  // Function to read barometer data
-    
-    // Fill the data structure
-    clock_gettime(CLOCK_REALTIME, &data.timestamp);
-    data.baro.pressure = baro_data.pressure;
-    data.baro.altitude = baro_data.altitude;
-    data.sensors_present = BARO_PRESENT;
-    
-    // Add to buffer
-    buffer_add(buffer, &data);
-}
+    // Print Barometer Data
+    printf("Barometer:\n");
+    printf("  Pressure: %.2f hPa\n", s->baro_data.pressure);
+    printf("  Altitude: %.2f m\n", s->baro_data.altitude);
 
-// Function to read GPS and update buffer
-void read_gps(SensorBuffer* buffer) {
-    SensorData data = {0};
-    GPSData* gps_data;
-    
-    // Get GPS data
-    gps_data = spin_gps();  // Function to read GPS data
-    
-    // Fill the data structure
-    clock_gettime(CLOCK_REALTIME, &data.timestamp);
-    
-    // Copy GPS data to our structure
-    data.gps.latitude = gps_data->latitude;
-    data.gps.longitude = gps_data->longitude;
-    data.gps.height = gps_data->height;
-    data.gps.utc_time = gps_data->utc_time;
-    data.gps.velocity_x = gps_data->velocity_x;
-    data.gps.velocity_y = gps_data->velocity_y;
-    data.gps.velocity_z = gps_data->velocity_z;
-    data.gps.accel_x = gps_data->accel_x;
-    data.gps.accel_y = gps_data->accel_y;
-    data.gps.accel_z = gps_data->accel_z;
-    
-    data.sensors_present = GPS_PRESENT;
-    
-    // Add to buffer
-    buffer_add(buffer, &data);
-}
+    // Print GPS Data
+    printf("GPS:\n");
+    printf("  Latitude: %.6f\n", s->gps_data.latitude);
+    printf("  Longitude: %.6f\n", s->gps_data.longitude);
+    printf("  Height: %.2f m\n", s->gps_data.height);
+    printf("  UTC Time: %.3f s\n", s->gps_data.utc_time);
+    printf("  Velocity (X, Y, Z): [%.3f, %.3f, %.3f] m/s\n", 
+           s->gps_data.velocity_x, s->gps_data.velocity_y, s->gps_data.velocity_z);
+    printf("  Acceleration (X, Y, Z): [%.3f, %.3f, %.3f] m/s²\n", 
+           s->gps_data.accel_x, s->gps_data.accel_y, s->gps_data.accel_z);
 
-// Function to read IMU and update buffer
-void read_imu(SensorBuffer* buffer) {
-    SensorData data = {0};
-    MPU6050Data imu_data;
-    
-    // Get IMU data
-    imu_data = *spin_imu();  // Function to read IMU data
-    
-    // Fill the data structure
-    clock_gettime(CLOCK_REALTIME, &data.timestamp);
-    
-    // Copy IMU data to our structure
-    data.imu.ax = imu_data.ax;
-    data.imu.ay = imu_data.ay;
-    data.imu.az = imu_data.az;
-    data.imu.gx = imu_data.gx;
-    data.imu.gy = imu_data.gy;
-    data.imu.gz = imu_data.gz;
-    
-    data.sensors_present = IMU_PRESENT;
-    
-    // Add to buffer
-    buffer_add(buffer, &data);
-}
+    // Print IMU Data
+    printf("IMU:\n");
+    printf("  Acceleration (X, Y, Z): [%.3f, %.3f, %.3f] m/s²\n", 
+           s->imu_data.ax, s->imu_data.ay, s->imu_data.az);
+    printf("  Gyroscope (X, Y, Z): [%.3f, %.3f, %.3f] rad/s\n", 
+           s->imu_data.gx, s->imu_data.gy, s->imu_data.gz);
 
-// Function to read laser TOF and update buffer
-void read_laser(SensorBuffer* buffer, Laser_Device* sensor) {
-    SensorData data = {0};
-    
-    // Get laser data
-    if (Laser_Measure_Single(sensor) == 0) {
-        // Fill the data structure
-        clock_gettime(CLOCK_REALTIME, &data.timestamp);
-        data.laser.distance = sensor->distance;
-        data.sensors_present = LASER_PRESENT;
-        
-        // Add to buffer
-        buffer_add(buffer, &data);
-    }
+    // Print Laser TOF Data
+    printf("Laser TOF:\n");
+    printf("  Distance: %.2f meters\n", s->distance);
+
+    // Print Time Delta
+    printf("Time:\n");
+    printf("  Delta T: %.6f seconds\n", s->delta_t);
+
+    printf("============================\n");
 }
+#endif
+
 
 int main() {
+    clock_t start = clock();
+
     // Set up signal handling for graceful shutdown
     signal(SIGINT, handle_signal);
     signal(SIGTERM, handle_signal);
@@ -124,33 +95,44 @@ int main() {
     // For nanosleep
     struct timespec ts;
     
-    // Initialize shared memory for the buffer
-    int fd = shm_open("sensor_buffer", O_CREAT | O_RDWR, 0666);
+    // Initialize shared memory for the counter
+    int fd = shm_open("simple_counter", O_CREAT | O_RDWR, 0666);
     if (fd == -1) {
         perror("shm_open");
         return 1;
     }
     
-    printf("sensor buffer size: %d\n", sizeof(SensorBuffer));
-    printf("Successfully created shared memory: /dev/shm/sensor_buffer with fd=%d\n", fd);
+    printf("Successfully created shared memory: /dev/shm/simple_counter with fd=%d\n", fd);
     
-    if (ftruncate(fd, sizeof(SensorBuffer)) == -1) {
+    if (ftruncate(fd, sizeof(SensorSuite)*BUFFER_SIZE) == -1) {
         perror("ftruncate");
+        close(fd);
         return 1;
     }
-    printf("DEBUG: ftruncate success, size set to %zu bytes\n", sizeof(SensorBuffer));
+    printf("Size set to %zu bytes\n", sizeof(SensorSuite)*BUFFER_SIZE);
     
-    g_sensor_buffer = (SensorBuffer*)mmap(NULL, sizeof(SensorBuffer), 
+    g_shared_buffer = (SensorSuite*)mmap(NULL, sizeof(SensorSuite)*BUFFER_SIZE, 
                                          PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (g_sensor_buffer == MAP_FAILED) {
+    if (g_shared_buffer == MAP_FAILED) {
         perror("mmap");
+        close(fd);
         return 1;
     }
-    printf("DEBUG: mmap result: %p, errno=%d (%s)\n", 
-           g_sensor_buffer, errno, g_sensor_buffer == MAP_FAILED ? strerror(errno) : "success");
+    printf("mmap result: %p\n", g_shared_buffer);
     
-    // Initialize the buffer
-    buffer_init(g_sensor_buffer);
+    // Initialize the counter and mutex
+    memset(g_shared_buffer, 0, sizeof(SensorSuite)*BUFFER_SIZE);  // Set all bytes to 0
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+    pthread_mutex_init(&g_shared_buffer->mutex, &attr);
+    pthread_mutexattr_destroy(&attr);
+    
+    printf("C program: Starting counter updates\n");
+    
+    BMP180Data* baro_data;
+    GPSData* gps_data;
+    MPU6050Data* imu_data;
     
     // Initialize all sensors
     bpm180_init();
@@ -163,30 +145,48 @@ int main() {
         fprintf(stderr, "Failed to initialize laser sensor\n");
         return 1;
     }
-    
-    // Main sensor reading loop
+
+    // Main loop - increment the counter
+    int i = 0;
+    SensorSuite* start_pos = g_shared_buffer;
     while (running) {
-        // Read from each sensor and update the buffer
-        read_barometer(g_sensor_buffer);
-        read_gps(g_sensor_buffer);
-        read_imu(g_sensor_buffer);
-        read_laser(g_sensor_buffer, &laser_sensor);
+        // Lock mutex, update counter, unlock mutex
+        pthread_mutex_lock(&g_shared_buffer->mutex);
         
-        // Sleep for 10ms
-        ts.tv_sec = 0;
-        ts.tv_nsec = 10000 * 1000;  // Convert 10000 microseconds to nanoseconds
-        nanosleep(&ts, NULL);
+        // copy data to memory
+        // g_shared_buffer->counter++;
+        gps_data = spin_gps();
+        (g_shared_buffer+i)->gps_data = *gps_data;
+        
+        imu_data = spin_imu();
+        (g_shared_buffer+i)->imu_data = *imu_data;
+        
+        baro_data = spin_bpm();
+        (g_shared_buffer+i)->baro_data = *baro_data;
+
+        if (Laser_Measure_Single(&laser_sensor) == 0) {
+            (g_shared_buffer+i)->distance = laser_sensor.distance;
+        }
+
+        (g_shared_buffer+i)->delta_t = (double)(clock() - start)/CLOCKS_PER_SEC;
+        
+        pthread_mutex_unlock(&g_shared_buffer->mutex);
+        
+        //i = (i+1)%BUFFER_SIZE;
+
+        #ifdef DEBUG
+            print_sensor_suite(&g_shared_buffer[i]);
+        #endif
+
+        // usleep(1);
     }
     
     // Clean up
-    buffer_cleanup(g_sensor_buffer);
-    munmap(g_sensor_buffer, sizeof(SensorBuffer));
-    shm_unlink("sensor_buffer");
+    pthread_mutex_destroy(&g_shared_buffer->mutex);
+    munmap(g_shared_buffer, sizeof(SharedCounter));
+    close(fd);
+    shm_unlink("simple_counter");
     
-    terminate_bmp_connection();
-    terminate_connection();
-    terminate_imu_connection();
-    Laser_stop_continuous(&laser_sensor);
-    
+    printf("C program: Cleanup complete\n");
     return 0;
 }

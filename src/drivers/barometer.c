@@ -11,6 +11,8 @@
 // I2C address for BMP180
 #define BMP180_ADDR 0x77
 
+// #define DEBUG
+
 // Oversampling setting (0 to 3). 0 gives the fastest reading.
 #define OSS 0
 
@@ -212,7 +214,9 @@ void print_bmp180_data(const BMP180Data *data) {
 // High-level function to perform a complete sensor read and display the results
 BMP180Data* spin_bpm() {
     parse_bpm180_data(&bmp_data);
-    print_bmp180_data(&bmp_data);
+    #ifdef DEBUG
+        print_bmp180_data(&bmp_data);
+    #endif
     return &bmp_data;
 }
 

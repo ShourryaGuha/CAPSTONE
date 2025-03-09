@@ -1,33 +1,54 @@
-// shared_buffer.h
-#ifndef SHARED_BUFFER_H
-#define SHARED_BUFFER_H
+// simple_buffer.h
+#ifndef SIMPLE_BUFFER_H
+#define SIMPLE_BUFFER_H
 
 #include <pthread.h>
 #include <time.h>
-#include "imu.h"
-#include "gps.h"
-#include "barometer.h"
-#include "laserTOF.h"
 
-// Unified sensor data structure
+// Sensor data structures
+typedef struct {
+    float ax, ay, az;
+    float gx, gy, gz;
+} IMUData;
+
+typedef struct {
+    double latitude, longitude, height;
+    double utc_time;
+    double velocity_x, velocity_y, velocity_z;
+    double accel_x, accel_y, accel_z;
+} GPSData;
+
+typedef struct {
+    float pressure;
+    float altitude;
+} BaroData;
+
+typedef struct {
+    float distance;
+} LaserData;
+
+// Flags for indicating which sensors are present in a packet
+#define IMU_PRESENT    0x01
+#define GPS_PRESENT    0x02
+#define BARO_PRESENT   0x04
+#define LASER_PRESENT  0x08
+
+// Single data packet containing all sensor data and timestamp
 typedef struct {
     struct timespec timestamp;
-    MPU6050Data imu_data;
-    GPSData gps_data;
-    BMP180Data baro_data;
-    Measurement laser_data;
-    int sensors_present;  // Bit flags to indicate which sensors have data
-    #define IMU_PRESENT     0x01
-    #define GPS_PRESENT     0x02
-    #define BARO_PRESENT    0x04
-    #define LASER_PRESENT   0x08
-} SensorPacket;
+    IMUData imu;
+    GPSData gps;
+    BaroData baro;
+    LaserData laser;
+    int sensors_present;  // Bitfield for which sensors are present
+} SensorData;
 
-// Circular buffer for sensor data
+// Buffer size
 #define BUFFER_SIZE 100
 
+// Simple circular buffer
 typedef struct {
-    SensorPacket buffer[BUFFER_SIZE];
+    SensorData buffer[BUFFER_SIZE];
     int write_index;
     int read_index;
     int count;
@@ -35,16 +56,11 @@ typedef struct {
     pthread_cond_t data_available;
 } SensorBuffer;
 
-// Initialize the buffer
+// Buffer operations
 void buffer_init(SensorBuffer* buffer);
-
-// Add data to the buffer
-int buffer_add(SensorBuffer* buffer, SensorPacket* data);
-
-// Get data from the buffer
-int buffer_get(SensorBuffer* buffer, SensorPacket* data);
-
-// Clean up the buffer
+int buffer_add(SensorBuffer* buffer, SensorData* data);
+int buffer_get(SensorBuffer* buffer, SensorData* data);
+int buffer_peek(SensorBuffer* buffer, SensorData* data, int offset);
 void buffer_cleanup(SensorBuffer* buffer);
 
-#endif // SHARED_BUFFER_H
+#endif // SIMPLE_BUFFER_H

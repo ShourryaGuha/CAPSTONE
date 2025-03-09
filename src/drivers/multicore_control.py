@@ -8,8 +8,8 @@ import signal
 import time
 
 # Configure paths
-C_PROGRAM_PATH = "../../build/sensor_collector"
-PYTHON_LOGGER_PATH = "./data_logger.py"
+C_PROGRAM_PATH = "build/main"
+PYTHON_LOGGER_PATH = "src/drivers/data_logger.py"
 
 # Flag for graceful shutdown
 running = True
@@ -49,6 +49,7 @@ def run_c_program(core_id):
                 process.kill()
                 
         print(f"C Program on Core {core_id} terminated")
+        raise RuntimeError(f"C Program on Core {core_id} terminated unexpectedly.")
         
     except Exception as e:
         print(f"Error running C program: {e}")
@@ -103,6 +104,7 @@ def run_python_logger(core_id):
                     process.kill()
                     
         print(f"Python Logger on Core {core_id} terminated")
+        raise RuntimeError(f"Python Logger on Core {core_id} terminated unexpectedly.")
         
     except Exception as e:
         print(f"Error running Python logger: {e}")
@@ -140,9 +142,20 @@ def main():
     try:
         for p in processes:
             p.join()
+    except RuntimeError as e:
+        print(f"Error detected: {e}")
+        global running
+        running = False  # Stop running flag
+        print("Shutting down all processes...")
+
+        # Terminate any running processes
+        for p in processes:
+            p.terminate()
+        
+        for p in processes:
+            p.join()
     except KeyboardInterrupt:
         # This should be caught by the signal handler, but just in case
-        global running
         running = False
         print("Waiting for processes to terminate...")
         time.sleep(2)  # Give processes time to clean up

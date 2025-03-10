@@ -64,6 +64,12 @@ scp -r shourryag@192.168.91.50:~/Documents/FILE_TRANSFER_ONLY/ CAPSTONE/
 
 **Note:** Use the GitHub repository for version-controlled changes instead of manual file transfers.
 
+### Merging
+Removing target folder
+```
+git checkout <<target_branch>> -- <<folder_name>>
+```
+
 ---
 
 ## Building and Running C Files

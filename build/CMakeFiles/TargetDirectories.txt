@@ -1,6 +1,0 @@
-/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/CMakeFiles/main.dir
-/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/CMakeFiles/edit_cache.dir
-/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/CMakeFiles/rebuild_cache.dir
-/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/src/drivers/CMakeFiles/drivers.dir
-/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/src/drivers/CMakeFiles/edit_cache.dir
-/home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build/src/drivers/CMakeFiles/rebuild_cache.dir

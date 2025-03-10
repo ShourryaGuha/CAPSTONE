@@ -42,8 +42,9 @@ static struct {
     double prev_vel_y;
     double prev_vel_z;
     double prev_time;
+    double prev_height;
     int initialized;
-} prev_state = {0, 0, 0, 0, 0};
+} prev_state = {0, 0, 0, 0, 0, 0};
 
 typedef struct {
     double latitude;
@@ -102,7 +103,19 @@ void find_velocity(GPSData* data, double speed_knots, double course) {
     // Calculate velocity components
     data->velocity_x = speed_ms * sin(course_rad);  // East component
     data->velocity_y = speed_ms * cos(course_rad);  // North component
-    data->velocity_z = 0.0;  // Assuming no vertical velocity from GPS
+
+    // Calculate vertical velocity (change in height over time)
+    if (prev_state.initialized) {
+        double dt = data->utc_time - prev_state.prev_time;
+        if (dt > 0) {
+            data->velocity_z = (data->height - prev_state.prev_height) / dt;
+        }
+    } else {
+        data->velocity_z = 0.0;
+    }
+
+    // Store previous values
+    prev_state.prev_height = data->height;
 }
 
 void find_acceleration(GPSData* data) {

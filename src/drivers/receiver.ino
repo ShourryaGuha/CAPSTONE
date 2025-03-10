@@ -10,11 +10,11 @@ RF24 radio(8, 10);
 const uint64_t pipe = 0xE7E7E7E7E7LL;
 
 // Define a structure that exactly matches the transmitted data.
-// (Three 16-bit values: distance, servo1, servo2)
+// (Three float values: distance, servo1, servo2)
 struct SensorData {
-  uint16_t distance;
-  uint16_t servo1;
-  uint16_t servo2;
+  float distance;
+  float servo1;
+  float servo2;
 };
 
 void setup() {
@@ -56,7 +56,6 @@ void setup() {
 }
 
 void loop() {
-  // Serial.println("Waiting for package!");
   // // Check if there is incoming data
   if (radio.available()) {
     uint8_t rawData[32]; // NRF24 can handle up to 32 bytes per packet
@@ -64,14 +63,28 @@ void loop() {
 
     if (dataSize > 0 && dataSize <= 32) {
       radio.read(rawData, dataSize);
+      
+      // Check if the received data size is exactly 12 bytes (three floats)
+      if (dataSize == sizeof(SensorData)) {
+        SensorData sensorData;
+        memcpy(&sensorData, rawData, sizeof(SensorData));
 
-      // Output raw binary data to the Serial Monitor
-      Serial.print("Raw Data: ");
-      for (size_t i = 0; i < dataSize; i++) {
-        Serial.print(rawData[i], HEX); // Output in hexadecimal format
-        Serial.print(" ");
+        Serial.print("Distance: ");
+        Serial.println(sensorData.distance);
+        Serial.print("Servo 1: ");
+        Serial.println(sensorData.servo1);
+        Serial.print("Servo 2: ");
+        Serial.println(sensorData.servo2);
+      } else {
+        // If data size is unexpected, print raw data in hexadecimal format.
+        Serial.print("Raw Data: ");
+        for (size_t i = 0; i < dataSize; i++) {
+          Serial.print(rawData[i], HEX);
+          Serial.print(" ");
+        }
+        Serial.println();
       }
-      Serial.println();
+
     }
   }
   

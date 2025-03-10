@@ -16,11 +16,11 @@
 #define NRF_W_TX_PAYLOAD  0xA0  // Command for writing TX payload
 #define NRF_FLUSH_TX      0xE1  // Command to flush TX FIFO
 
-// Define a packed structure for our 3 data values (6 bytes total)
+// Define a packed structure for our 3 float values (12 bytes total)
 typedef struct __attribute__((packed)) {
-    uint16_t distance;   // Distance sensor reading
-    uint16_t servo1;     // Servo 1 angle
-    uint16_t servo2;     // Servo 2 angle
+    float distance;   // Distance sensor reading
+    float servo1;     // Servo 1 angle
+    float servo2;     // Servo 2 angle
 } SensorData;
 
 // Global variable for the SPI handle
@@ -86,12 +86,18 @@ void nrf24_transmit_payload(uint8_t *payload, uint8_t len) {
         buffer[i+1] = payload[i];  // Copy payload data
     }
 
-        // Debug: Print payload being sent
-    printf("Sending Payload: ");
-    for (int i = 0; i < len; i++) {
-        printf("0x%02X ", payload[i]);  // Hexadecimal format for better visualization
+    // print as float values if payload matches SensorData size.
+    if (len == sizeof(SensorData)) {
+        SensorData *sData = (SensorData *)payload;
+        printf("Sending Payload: distance: %.2f, servo1: %.2f, servo2: %.2f\n",
+               sData->distance, sData->servo1, sData->servo2);
+    } else {
+        printf("Sending Payload: ");
+        for (int i = 0; i < len; i++) {
+            printf("0x%02X ", payload[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
 
 
     gpioWrite(CSN_PIN, 0);
@@ -165,30 +171,35 @@ void terminate_transmitter() {
 // int main(void) {
 //     // Initialize the NRF24L01+ module.
 //     nrf24_init();
-    
-//     // Prepare our sensor data structure with initial values.
+//     
+//     // Prepare our sensor data structure with initial float values.
 //     SensorData sensorData;
-//     sensorData.distance = 100; // Example starting value for distance
-//     sensorData.servo1   = 45;  // Example starting angle for servo 1
-//     sensorData.servo2   = 90;  // Example starting angle for servo 2
-    
+//     sensorData.distance = 100.0; // Starting distance as float
+//     sensorData.servo1   = 45.0;  // Starting angle for servo 1 as float
+//     sensorData.servo2   = 90.0;  // Starting angle for servo 2 as float
+//     
 //     printf("Starting data transmission. Press Ctrl+C to stop.\n");
-    
+//     
 //     // Main loop: update sensor values (simulated) and transmit them.
 //     while (1) {
-//         // (Simulated) Update sensor values. Replace these with actual sensor readings.
-//         sensorData.distance++;         // Increment distance
-//         if (sensorData.distance > 1000)
-//             sensorData.distance = 0;
-//         sensorData.servo1 = (sensorData.servo1 + 1) % 181; // Cycle 0-180
-//         sensorData.servo2 = (sensorData.servo2 + 2) % 181; // Cycle 0-180
-
-//         // Transmit the sensorData structure as a 6-byte payload.
+//         sensorData.distance += 1.0;
+//         if (sensorData.distance > 1000.0)
+//             sensorData.distance = 0.0;
+//         
+//         sensorData.servo1 += 1.0;
+//         if (sensorData.servo1 >= 181.0)
+//             sensorData.servo1 -= 181.0;
+//         
+//         sensorData.servo2 += 2.0;
+//         if (sensorData.servo2 >= 181.0)
+//             sensorData.servo2 -= 181.0;
+// 
+//         // Transmit the sensorData structure (12 bytes) as the payload.
 //         nrf24_transmit_payload((uint8_t*)&sensorData, sizeof(sensorData));
 //     }
-    
-//     // Cleanup (this code is unreachable in the infinite loop, but shown for completeness).
+//     
+//     // Cleanup (unreachable in this infinite loop but provided for completeness).
 //     terminate_transmitter();
-    
+//     
 //     return 0;
 // }

@@ -1,2 +1,0 @@
-/usr/bin/ar qc libdrivers.a CMakeFiles/drivers.dir/gps.c.o CMakeFiles/drivers.dir/main.c.o CMakeFiles/drivers.dir/servo_control.c.o CMakeFiles/drivers.dir/transmitter.c.o
-/usr/bin/ranlib libdrivers.a

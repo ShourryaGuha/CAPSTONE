@@ -172,8 +172,13 @@ int Laser_Measure_Continuous(Laser_Device *device) {
         //     fprintf(stderr, "No data received from sensor.\n");
         //     return -1;
         // }
+
+        // //print raw value for debugging
+        // for(uint8_t i=0; i < bytes_read; i++) {
+        //     printf("%02X ", response[i]);
+        // }
         parse_measurement(response, &(device->distance));
-        //print distance in metres
+        // print distance in metres
         printf("Distance: %.2f m\n", device->distance);
     }
 
@@ -198,7 +203,6 @@ int Laser_stop_continuous(Laser_Device *device) {
     }
 
 }
-
 
 static int parse_measurement(uint8_t *response, float *distance) {
     uint16_t check_sum = 0;

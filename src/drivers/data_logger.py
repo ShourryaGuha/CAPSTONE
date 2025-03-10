@@ -154,11 +154,11 @@ def main():
                             gps_time_str = f"{sensor_data.gps_data.utc_time:.1f}"
                     
                     # Print summary to console
-                    print(f"Logger: t={sensor_data.delta_t:.2f}s, "
-                          f"Baro: {sensor_data.baro_data.pressure:.1f}hPa/{sensor_data.baro_data.altitude:.1f}m, "
-                          f"GPS: ({sensor_data.gps_data.latitude:.5f}, {sensor_data.gps_data.longitude:.5f}, "
-                          f"{sensor_data.gps_data.height:.1f}m), "
-                          f"Distance: {sensor_data.distance:.2f}m")
+                    # print(f"Logger: t={sensor_data.delta_t:.2f}s, "
+                    #       f"Baro: {sensor_data.baro_data.pressure:.1f}hPa/{sensor_data.baro_data.altitude:.1f}m, "
+                    #       f"GPS: ({sensor_data.gps_data.latitude:.5f}, {sensor_data.gps_data.longitude:.5f}, "
+                    #       f"{sensor_data.gps_data.height:.1f}m), "
+                    #       f"Distance: {sensor_data.distance:.2f}m")
                     
                     last_delta_t = sensor_data.delta_t
                 

@@ -110,7 +110,8 @@ int Laser_Measure_Single(Laser_Device *device) {
         return -1;
     }
 
-    sleep(1);
+    usleep(1000);
+    // sleep(1);
 
     uint8_t response[9];
     int bytes_read = read(device->fd, response, sizeof(response));
@@ -145,6 +146,20 @@ static void signal_handler(int signal) {
 }
 
 
+int spin_laser(Laser_Device *device){
+    uint8_t response[9];
+    int bytes_read = read(device->fd, response, sizeof(response));
+    if (bytes_read <= 0) {
+        fprintf(stderr, "No data received from sensor.\n");
+        return -1;
+    }
+    parse_measurement(response, &(device->distance));
+    //print distance in metres
+    #ifdef DEBUG
+        printf("Distance: %.2f m\n", device->distance);
+    #endif
+}
+
 int Laser_Measure_Continuous(Laser_Device *device) {
     uint8_t cmd[] = {
         0xFA,  // MsgType
@@ -166,20 +181,8 @@ int Laser_Measure_Continuous(Laser_Device *device) {
         return -1;
     }
 
-    sleep(1);
-
-    while(keep_running) {
-        uint8_t response[9];
-        int bytes_read = read(device->fd, response, sizeof(response));
-        if (bytes_read <= 0) {
-            fprintf(stderr, "No data received from sensor.\n");
-            return -1;
-        }
-        parse_measurement(response, &(device->distance));
-        //print distance in metres
-        printf("Distance: %.2f m\n", device->distance);
-    }
-
+    // sleep(1);
+    // usleep(1000);
 }
 
 int Laser_stop_continuous(Laser_Device *device) {

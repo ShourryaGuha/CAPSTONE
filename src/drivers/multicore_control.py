@@ -7,7 +7,7 @@ import subprocess
 import signal
 import time
 
-# Configure paths - adjust these to match your actual executable paths
+# # Configure paths - adjust these to match your actual executable paths
 C_PROGRAM_PATH = "build/main"
 PYTHON_LOGGER_PATH = "src/drivers/data_logger.py"
 

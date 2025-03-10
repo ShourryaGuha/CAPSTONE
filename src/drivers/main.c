@@ -15,7 +15,7 @@
 #include "laserTOF.h"
 
 
-#define DEBUG
+// #define DEBUG
 
 #define BUFFER_SIZE 100
 
@@ -86,7 +86,10 @@ void print_sensor_suite(const SensorSuite* s) {
 
 
 int main() {
-    clock_t start = clock();
+    // clock_t start = clock();
+
+    struct timeval start_time, current_time;
+    gettimeofday(&start_time, NULL);
 
     // Set up signal handling for graceful shutdown
     signal(SIGINT, handle_signal);
@@ -145,6 +148,7 @@ int main() {
         fprintf(stderr, "Failed to initialize laser sensor\n");
         return 1;
     }
+    Laser_Measure_Continuous(&laser_sensor);
 
     // Main loop - increment the counter
     int i = 0;
@@ -168,7 +172,11 @@ int main() {
             (g_shared_buffer+i)->distance = laser_sensor.distance;
         }
 
-        (g_shared_buffer+i)->delta_t = (double)(clock() - start)/CLOCKS_PER_SEC;
+        // (g_shared_buffer+i)->delta_t = (double)(clock() - start)/CLOCKS_PER_SEC;
+        // (g_shared_buffer+i)->delta_t = difftime(now, start);
+
+        gettimeofday(&current_time, NULL);        
+        (g_shared_buffer+i)->delta_t = (double)((current_time.tv_sec - start_time.tv_sec) + (current_time.tv_usec - start_time.tv_usec) / 1000000.0);
         
         pthread_mutex_unlock(&g_shared_buffer->mutex);
         

@@ -30,6 +30,12 @@
 #define PITCH_MID_ANGLE 0
 #define PITCH_MID_SERVO 86
 
+// New constants for absolute min/max allowed angles
+#define ABS_YAW_MIN -80
+#define ABS_YAW_MAX 85
+#define ABS_PITCH_MIN -85
+#define ABS_PITCH_MAX 40
+
 #define SPIRAL_STEP 0.5f
 #define SERVO_ROTATION_SPEED 2333
 #define MIN_STEP_SIZE 0.1f
@@ -48,7 +54,17 @@ typedef struct {
 SharedMemory *shared_mem;
 
 float map_angle_to_servo(float angle, float min_angle, float max_angle, float min_servo, float max_servo, float mid_angle, float mid_servo) {
+    // Apply absolute limits first
+    if (angle < ABS_PITCH_MIN || angle > ABS_PITCH_MAX) {
+        angle = fmax(ABS_PITCH_MIN, fmin(ABS_PITCH_MAX, angle));
+    }
+    if (angle < ABS_YAW_MIN || angle > ABS_YAW_MAX) {
+        angle = fmax(ABS_YAW_MIN, fmin(ABS_YAW_MAX, angle));
+    }
+
+    // Apply mapping limits
     angle = fmax(min_angle, fmin(max_angle, angle));
+    
     return (angle < mid_angle) ? 
         mid_servo + (min_servo - mid_servo) * (angle - mid_angle) / (min_angle - mid_angle) :
         mid_servo + (max_servo - mid_servo) * (angle - mid_angle) / (max_angle - mid_angle);

@@ -12,7 +12,7 @@
 #include "laserTOF.h"
 #include "solenoid_control.h"
 
-#define TOLERANCE 0.15
+#define TOLERANCE 0.2
 #define MAX_ITERATIONS 500
 #define SHM_NAME "servo_shared_memory"
 
@@ -87,7 +87,7 @@ int main() {
     if (gpioInitialise() < 0) return -1;
 
     servo_t servo_pitch, servo_yaw;
-    if (servo_init(&servo_pitch, PWM0_GPIO) < 0 || servo_init(&servo_yaw, PWM1_GPIO) < 0) return -1;
+    if (servo_init(&servo_pitch, PWM1_GPIO) < 0 || servo_init(&servo_yaw, PWM0_GPIO) < 0) return -1;
 
     Laser_Device sensor;
     sensor.device_path = UART2_DEVICE;
@@ -114,8 +114,8 @@ int main() {
         target_distance = shared_mem->distance;
         pthread_mutex_unlock(&shared_mem->mutex);
         #else
-        target_pitch = 0.648363;
-        target_yaw = 1.009765;
+        target_pitch = -40;
+        target_yaw = 0;
         target_distance = 0.3;
         #endif
 

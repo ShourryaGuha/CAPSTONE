@@ -130,6 +130,30 @@ drivers/fast:
 	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/build
 .PHONY : drivers/fast
 
+barometer.o: barometer.c.o
+.PHONY : barometer.o
+
+# target to build an object file
+barometer.c.o:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/barometer.c.o
+.PHONY : barometer.c.o
+
+barometer.i: barometer.c.i
+.PHONY : barometer.i
+
+# target to preprocess a source file
+barometer.c.i:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/barometer.c.i
+.PHONY : barometer.c.i
+
+barometer.s: barometer.c.s
+.PHONY : barometer.s
+
+# target to generate assembly for a file
+barometer.c.s:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/barometer.c.s
+.PHONY : barometer.c.s
+
 gps.o: gps.c.o
 .PHONY : gps.o
 
@@ -153,6 +177,54 @@ gps.s: gps.c.s
 gps.c.s:
 	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/gps.c.s
 .PHONY : gps.c.s
+
+imu.o: imu.c.o
+.PHONY : imu.o
+
+# target to build an object file
+imu.c.o:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/imu.c.o
+.PHONY : imu.c.o
+
+imu.i: imu.c.i
+.PHONY : imu.i
+
+# target to preprocess a source file
+imu.c.i:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/imu.c.i
+.PHONY : imu.c.i
+
+imu.s: imu.c.s
+.PHONY : imu.s
+
+# target to generate assembly for a file
+imu.c.s:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/imu.c.s
+.PHONY : imu.c.s
+
+laserTOF.o: laserTOF.c.o
+.PHONY : laserTOF.o
+
+# target to build an object file
+laserTOF.c.o:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/laserTOF.c.o
+.PHONY : laserTOF.c.o
+
+laserTOF.i: laserTOF.c.i
+.PHONY : laserTOF.i
+
+# target to preprocess a source file
+laserTOF.c.i:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/laserTOF.c.i
+.PHONY : laserTOF.c.i
+
+laserTOF.s: laserTOF.c.s
+.PHONY : laserTOF.s
+
+# target to generate assembly for a file
+laserTOF.c.s:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/laserTOF.c.s
+.PHONY : laserTOF.c.s
 
 main.o: main.c.o
 .PHONY : main.o
@@ -178,6 +250,30 @@ main.c.s:
 	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/main.c.s
 .PHONY : main.c.s
 
+manipulators.o: manipulators.c.o
+.PHONY : manipulators.o
+
+# target to build an object file
+manipulators.c.o:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/manipulators.c.o
+.PHONY : manipulators.c.o
+
+manipulators.i: manipulators.c.i
+.PHONY : manipulators.i
+
+# target to preprocess a source file
+manipulators.c.i:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/manipulators.c.i
+.PHONY : manipulators.c.i
+
+manipulators.s: manipulators.c.s
+.PHONY : manipulators.s
+
+# target to generate assembly for a file
+manipulators.c.s:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/manipulators.c.s
+.PHONY : manipulators.c.s
+
 servo_control.o: servo_control.c.o
 .PHONY : servo_control.o
 
@@ -201,6 +297,54 @@ servo_control.s: servo_control.c.s
 servo_control.c.s:
 	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/servo_control.c.s
 .PHONY : servo_control.c.s
+
+solenoid_control.o: solenoid_control.c.o
+.PHONY : solenoid_control.o
+
+# target to build an object file
+solenoid_control.c.o:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o
+.PHONY : solenoid_control.c.o
+
+solenoid_control.i: solenoid_control.c.i
+.PHONY : solenoid_control.i
+
+# target to preprocess a source file
+solenoid_control.c.i:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.i
+.PHONY : solenoid_control.c.i
+
+solenoid_control.s: solenoid_control.c.s
+.PHONY : solenoid_control.s
+
+# target to generate assembly for a file
+solenoid_control.c.s:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.s
+.PHONY : solenoid_control.c.s
+
+transceiver.o: transceiver.c.o
+.PHONY : transceiver.o
+
+# target to build an object file
+transceiver.c.o:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/transceiver.c.o
+.PHONY : transceiver.c.o
+
+transceiver.i: transceiver.c.i
+.PHONY : transceiver.i
+
+# target to preprocess a source file
+transceiver.c.i:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/transceiver.c.i
+.PHONY : transceiver.c.i
+
+transceiver.s: transceiver.c.s
+.PHONY : transceiver.s
+
+# target to generate assembly for a file
+transceiver.c.s:
+	cd /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/build && $(MAKE) $(MAKESILENT) -f src/drivers/CMakeFiles/drivers.dir/build.make src/drivers/CMakeFiles/drivers.dir/transceiver.c.s
+.PHONY : transceiver.c.s
 
 transmitter.o: transmitter.c.o
 .PHONY : transmitter.o
@@ -235,15 +379,33 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... drivers"
+	@echo "... barometer.o"
+	@echo "... barometer.i"
+	@echo "... barometer.s"
 	@echo "... gps.o"
 	@echo "... gps.i"
 	@echo "... gps.s"
+	@echo "... imu.o"
+	@echo "... imu.i"
+	@echo "... imu.s"
+	@echo "... laserTOF.o"
+	@echo "... laserTOF.i"
+	@echo "... laserTOF.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... manipulators.o"
+	@echo "... manipulators.i"
+	@echo "... manipulators.s"
 	@echo "... servo_control.o"
 	@echo "... servo_control.i"
 	@echo "... servo_control.s"
+	@echo "... solenoid_control.o"
+	@echo "... solenoid_control.i"
+	@echo "... solenoid_control.s"
+	@echo "... transceiver.o"
+	@echo "... transceiver.i"
+	@echo "... transceiver.s"
 	@echo "... transmitter.o"
 	@echo "... transmitter.i"
 	@echo "... transmitter.s"

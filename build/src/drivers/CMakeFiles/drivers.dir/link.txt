@@ -1,2 +1,2 @@
-/usr/bin/ar qc libdrivers.a CMakeFiles/drivers.dir/gps.c.o CMakeFiles/drivers.dir/main.c.o CMakeFiles/drivers.dir/servo_control.c.o CMakeFiles/drivers.dir/transmitter.c.o
+/usr/bin/ar qc libdrivers.a CMakeFiles/drivers.dir/barometer.c.o CMakeFiles/drivers.dir/gps.c.o CMakeFiles/drivers.dir/imu.c.o CMakeFiles/drivers.dir/laserTOF.c.o CMakeFiles/drivers.dir/main.c.o CMakeFiles/drivers.dir/manipulators.c.o CMakeFiles/drivers.dir/servo_control.c.o CMakeFiles/drivers.dir/solenoid_control.c.o CMakeFiles/drivers.dir/transceiver.c.o CMakeFiles/drivers.dir/transmitter.c.o
 /usr/bin/ranlib libdrivers.a

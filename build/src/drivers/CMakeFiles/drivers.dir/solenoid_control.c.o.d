@@ -1,5 +1,5 @@
 src/drivers/CMakeFiles/drivers.dir/solenoid_control.c.o: \
- /home/shourryag/Documents/CAMERON_DEV_AREA/CAPSTONE/src/drivers/solenoid_control.c \
+ /home/shourryag/Documents/CAPSTONE-ARVIN/CAPSTONE/src/drivers/solenoid_control.c \
  /usr/include/stdc-predef.h /usr/include/pigpio.h \
  /usr/lib/gcc/aarch64-linux-gnu/12/include/stddef.h \
  /usr/lib/gcc/aarch64-linux-gnu/12/include/stdint.h /usr/include/stdint.h \

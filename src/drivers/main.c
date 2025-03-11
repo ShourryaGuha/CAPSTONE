@@ -15,44 +15,57 @@ int main() {
         return -1;
     }
 
-    sleep(1);
+    sleep(0.5);
 
     if (servo_init(&servo2, PWM1_GPIO) < 0) {
         fprintf(stderr, "Failed to initialize servo 2\n");
         return -1;
     }
 
-    sleep(1);
+    // sleep(1);
 
-    // Move servo 2 to 90 degrees
-    if (servo_set_angle(&servo2, 80.0f) < 0) {
-        fprintf(stderr, "Failed to set angle for servo 2\n");
-    }
+    // // Move servo 2 to 90 degrees
+    // if (servo_set_angle(&servo2, 80.0f) < 0) {
+    //     fprintf(stderr, "Failed to set angle for servo 2\n");
+    // }
 
-    sleep(2);
+    sleep(0.5);
     
+    /*
+    PWM0_GPIO, from above, YAW:
+    Middle ~= 93.0
+    LHS ~= 183
+    RHS ~= 3
+
+    PWM1_GPIO, looking at side, above, PITCH:
+    Middle ~= 86.0
+    Forwards ~= 6
+    Backwards ~= 186.0
+    */
+
+
     // Move servo 2 to 120 degrees
-    if (servo_set_angle(&servo2, 120.0f) < 0) {
+    if (servo_set_angle(&servo2, 160.0f) < 0) {
         fprintf(stderr, "Failed to set angle for servo 2\n");
     }
 
-    // Simulate some delay to observe servo movement
-    sleep(2);
+    // // Simulate some delay to observe servo movement
+    // sleep(2);
 
-    // Move servo 1 to 90 degrees
-    if (servo_set_angle(&servo1, 80.0f) < 0) {
-        fprintf(stderr, "Failed to set angle for servo 1\n");
-    }
+    // // Move servo 1 to 90 degrees
+    // if (servo_set_angle(&servo1, 80.0f) < 0) {
+    //     fprintf(stderr, "Failed to set angle for servo 1\n");
+    // }
     
-    sleep(2);
+    // sleep(2);
     
-    // Move servo 1 to 120 degrees
-    if (servo_set_angle(&servo1, 120.0f) < 0) {
-        fprintf(stderr, "Failed to set angle for servo 1\n");
-    }
+    // // Move servo 1 to 120 degrees
+    // if (servo_set_angle(&servo1, 120.0f) < 0) {
+    //     fprintf(stderr, "Failed to set angle for servo 1\n");
+    // }
 
-    // Simulate some delay to observe servo movement
-    sleep(2);
+    // // Simulate some delay to observe servo movement
+    // sleep(2);
 
     // Cleanup resources
     servo_cleanup(&servo1);

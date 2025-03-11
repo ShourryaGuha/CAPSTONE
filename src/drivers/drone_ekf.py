@@ -2,11 +2,12 @@
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
 # Load data from CSV file
 data = pd.read_csv("../../Car_Ride_10th/sensor_log40ish.csv")
-
+time = pd.to_datetime(data['timestamp'])  # Convert timestamp to datetime for better handling
 imu_ax = data['imu_ax']
 imu_ay = data['imu_ay']
 imu_az = data['imu_az']
@@ -109,6 +110,11 @@ pitch = 0   # about x-axis in the direction of left side of the assembled drone
 # Complimentary filter
 alpha = 0.98
 
+# Lists to store roll, pitch, and time values
+roll_values = []
+pitch_values = []
+time_values = []
+
 for i in range(len(imu_ax_filtered)):
 
     accel_roll = np.arctan2(-imu_ax_filtered[i], np.sqrt(imu_ay_filtered[i]**2 + imu_az_filtered[i]**2))  # Roll (about Y-axis)
@@ -121,29 +127,48 @@ for i in range(len(imu_ax_filtered)):
         roll = alpha * (roll + imu_gyro_y[i] * dt) + (1 - alpha) * accel_roll
         pitch = alpha * (pitch + imu_gyro_x[i] * dt) + (1 - alpha) * accel_pitch
 
+    #  # Print roll and pitch angles
+    # print(f"Step {i}: Roll = {np.degrees(roll):.2f} degrees, Pitch = {np.degrees(pitch):.2f} degrees")
+
+    # Store roll, pitch, and time values
+    roll_values.append(np.degrees(roll))
+    pitch_values.append(np.degrees(pitch))
+    time_values.append(time[i])
+
     # assuming correct coordinate transfomr from IMU to world frame from chatgpt
 
-    R_mat = np.array([
-        [np.cos(pitch), 0, -np.sin(pitch)],
-        [np.sin(roll) * np.sin(pitch), np.cos(roll), np.sin(roll) * np.cos(pitch)],
-        [np.cos(roll) * np.sin(pitch), -np.sin(roll), np.cos(roll) * np.cos(pitch)]
-    ])
+    # R_mat = np.array([
+    #     [np.cos(pitch), 0, -np.sin(pitch)],
+    #     [np.sin(roll) * np.sin(pitch), np.cos(roll), np.sin(roll) * np.cos(pitch)],
+    #     [np.cos(roll) * np.sin(pitch), -np.sin(roll), np.cos(roll) * np.cos(pitch)]
+    # ])
 
-    # Convert acceleration to world frame & remove gravity
-    accel_world = R_mat @ np.array([imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i]])
-    accel_linear = accel_world - np.array([0, 0, -9.81])
+    # # Convert acceleration to world frame & remove gravity
+    # accel_world = R_mat @ np.array([imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i]])
 
-    # Access x, y, and z values of accel_linear
-    accel_linear_x = accel_linear[0]
-    accel_linear_y = accel_linear[1]
-    accel_linear_z = accel_linear[2]
+    # # might need to multiple g = np.array([0, 0, -9.81]) with R_mat, check math and chatgpt
+    # accel_linear = accel_world - np.array([0, 0, -9.81])
 
-    ekf.predict(accel_linear_x, accel_linear_y, accel_linear_z)
+    # # Access x, y, and z values of accel_linear
+    # accel_linear_x = accel_linear[0]
+    # accel_linear_y = accel_linear[1]
+    # accel_linear_z = accel_linear[2]
 
-    ekf.update(velocity_x[i], velocity_y[i], velocity_z[i])
+    # ekf.predict(accel_linear_x, accel_linear_y, accel_linear_z)
 
-    predicted_state = ekf.get_state()
-    predicted_states.append(predicted_state)
+    # ekf.update(velocity_x[i], velocity_y[i], velocity_z[i])
 
+    # predicted_state = ekf.get_state()
+    # predicted_states.append(predicted_state)
 
+# Plot roll and pitch vs time
+plt.figure(figsize=(10, 6))
+plt.plot(time_values, roll_values, label='Roll (degrees)')
+plt.plot(time_values, pitch_values, label='Pitch (degrees)')
+plt.xlabel('Time')
+plt.ylabel('Angle (degrees)')
+plt.title('Roll and Pitch vs Time')
+plt.legend()
+plt.grid(True)
+plt.show()
 

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load data from CSV file
-data = pd.read_csv("sensor_log40ish.csv")
+data = pd.read_csv("../../Car_Ride_10th/sensor_log40ish.csv")
 
 # Extract necessary columns
 time = pd.to_datetime(data['timestamp'])  # Convert timestamp to datetime for better handling

@@ -11,6 +11,10 @@ imu_ax = data['imu_ax']
 imu_ay = data['imu_ay']
 imu_az = data['imu_az']
 
+imu_gyro_x = data['imu_gx']
+imu_gyro_y = data['imu_gy']
+imu_gyro_z = data['imu_gz']
+
 velocity_x = data['velocity_x']
 velocity_y = data['velocity_y']
 velocity_z = data['velocity_z']
@@ -99,10 +103,44 @@ ekf = EKF_Drone(dt, process_noise, measurement_noise)
 # Loop over the data (for each time step)
 predicted_states = []
 
-for i in range(len(imu_ax_filtered)):
-    ekf.predict(imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i])
+roll = 0  # about y-axis in the direction of nose of the drone
+pitch = 0   # about x-axis in the direction of left side of the assembled drone
 
-    ekf.update(velocity_x, velocity_y, velocity_z)
+# Complimentary filter
+alpha = 0.98
+
+for i in range(len(imu_ax_filtered)):
+
+    accel_roll = np.arctan2(-imu_ax_filtered[i], np.sqrt(imu_ay_filtered[i]**2 + imu_az_filtered[i]**2))  # Roll (about Y-axis)
+    accel_pitch = np.arctan2(imu_ay_filtered[i], np.sqrt(imu_ax_filtered[i]**2 + imu_az_filtered[i]**2))  # Pitch (about X-axis)
+
+    if i == 0:
+        roll, pitch = accel_roll, accel_pitch
+    else:
+    # Gyroscope integration for smooth roll & pitch updates
+        roll = alpha * (roll + imu_gyro_y[i] * dt) + (1 - alpha) * accel_roll
+        pitch = alpha * (pitch + imu_gyro_x[i] * dt) + (1 - alpha) * accel_pitch
+
+    # assuming correct coordinate transfomr from IMU to world frame from chatgpt
+
+    R_mat = np.array([
+        [np.cos(pitch), 0, -np.sin(pitch)],
+        [np.sin(roll) * np.sin(pitch), np.cos(roll), np.sin(roll) * np.cos(pitch)],
+        [np.cos(roll) * np.sin(pitch), -np.sin(roll), np.cos(roll) * np.cos(pitch)]
+    ])
+
+    # Convert acceleration to world frame & remove gravity
+    accel_world = R_mat @ np.array([imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i]])
+    accel_linear = accel_world - np.array([0, 0, -9.81])
+
+    # Access x, y, and z values of accel_linear
+    accel_linear_x = accel_linear[0]
+    accel_linear_y = accel_linear[1]
+    accel_linear_z = accel_linear[2]
+
+    ekf.predict(accel_linear_x, accel_linear_y, accel_linear_z)
+
+    ekf.update(velocity_x[i], velocity_y[i], velocity_z[i])
 
     predicted_state = ekf.get_state()
     predicted_states.append(predicted_state)

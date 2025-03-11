@@ -8,6 +8,8 @@ import time
 import datetime
 import ctypes
 from ctypes import Structure, c_int, c_float, c_double, Array, POINTER
+from drone_ekf import EKF_Drone
+import numpy as np
 
 # Flag for graceful shutdown
 running = True
@@ -71,6 +73,19 @@ def main():
     
     # This is the path where POSIX shared memory objects appear in Linux
     shm_path = "/dev/shm/simple_counter"
+
+    # Example usage:
+    dt = 0.1  # Time step (100ms)
+    process_noise = 0.1  # Process noise variance (acceleration noise)
+    measurement_noise = 1.0  # Measurement noise variance (GPS velocity noise)
+
+    ekf = EKF_Drone(dt, process_noise, measurement_noise)
+
+    roll = 0  # about y-axis in the direction of nose of the drone
+    pitch = 0   # about x-axis in the direction of left side of the assembled drone
+
+    # Complimentary filter
+    alpha = 0.98     
     
     # Wait for the shared memory file to exist
     while retries < max_retries and running:
@@ -123,7 +138,13 @@ def main():
                 if sensor_data.delta_t != last_delta_t:
                     # Get current timestamp for the log
                     timestamp = datetime.datetime.now().isoformat()
+
+                    roll, pitch = ekf.calculate_roll_pitch(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, dt, alpha, roll, pitch)
                     
+                    roll_degrees = np.degrees(ekf.roll)
+                    pitch_degrees = np.degrees(ekf.pitch)
+
+                    print(f"Roll: {roll:.2f} radians, Roll: {roll_degrees:.2f} degrees, Pitch: {pitch:.2f} radians, Pitch: {pitch_degrees:.2f}")
                     # Format all data as CSV row
                     log_row = (
                         f"{timestamp},{sensor_data.delta_t:.6f},"

@@ -93,6 +93,19 @@ class EKF_Drone:
     def get_state(self):
         """ Returns the estimated velocity (vx, vy, vz) """
         return self.x.flatten()
+    
+    def calculate_roll_pitch(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, dt, alpha, prev_roll, prev_pitch):
+        accel_roll = np.arctan2(-accel_x, np.sqrt(accel_y**2 + accel_z**2))  # Roll (about Y-axis)
+        accel_pitch = np.arctan2(accel_y, np.sqrt(accel_x**2 + accel_z**2))  # Pitch (about X-axis)
+
+        if prev_roll == 0 or prev_pitch == 0:
+            roll, pitch = accel_roll, accel_pitch
+        else:
+            # Gyroscope integration for smooth roll & pitch updates
+            roll = alpha * (prev_roll + gyro_y * dt) + (1 - alpha) * accel_roll
+            pitch = alpha * (prev_pitch + gyro_x * dt) + (1 - alpha) * accel_pitch
+
+        return roll, pitch 
 
 # Example usage:
 dt = 0.1  # Time step (100ms)
@@ -113,19 +126,11 @@ alpha = 0.98
 # Lists to store roll, pitch, and time values
 roll_values = []
 pitch_values = []
-time_values = []
+# time_values = []
 
 for i in range(len(imu_ax_filtered)):
 
-    accel_roll = np.arctan2(-imu_ax_filtered[i], np.sqrt(imu_ay_filtered[i]**2 + imu_az_filtered[i]**2))  # Roll (about Y-axis)
-    accel_pitch = np.arctan2(imu_ay_filtered[i], np.sqrt(imu_ax_filtered[i]**2 + imu_az_filtered[i]**2))  # Pitch (about X-axis)
-
-    if i == 0:
-        roll, pitch = accel_roll, accel_pitch
-    else:
-    # Gyroscope integration for smooth roll & pitch updates
-        roll = alpha * (roll + imu_gyro_y[i] * dt) + (1 - alpha) * accel_roll
-        pitch = alpha * (pitch + imu_gyro_x[i] * dt) + (1 - alpha) * accel_pitch
+    roll, pitch = ekf.calculate_roll_pitch(imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i], imu_gyro_x[i], imu_gyro_y[i], dt, alpha, roll, pitch)
 
     #  # Print roll and pitch angles
     # print(f"Step {i}: Roll = {np.degrees(roll):.2f} degrees, Pitch = {np.degrees(pitch):.2f} degrees")
@@ -133,7 +138,7 @@ for i in range(len(imu_ax_filtered)):
     # Store roll, pitch, and time values
     roll_values.append(np.degrees(roll))
     pitch_values.append(np.degrees(pitch))
-    time_values.append(time[i])
+    # time_values.append(time[i])
 
     # assuming correct coordinate transfomr from IMU to world frame from chatgpt
 
@@ -163,8 +168,8 @@ for i in range(len(imu_ax_filtered)):
 
 # Plot roll and pitch vs time
 plt.figure(figsize=(10, 6))
-plt.plot(time_values, roll_values, label='Roll (degrees)')
-plt.plot(time_values, pitch_values, label='Pitch (degrees)')
+plt.plot(time, roll_values, label='Roll (degrees)')
+plt.plot(time, pitch_values, label='Pitch (degrees)')
 plt.xlabel('Time')
 plt.ylabel('Angle (degrees)')
 plt.title('Roll and Pitch vs Time')

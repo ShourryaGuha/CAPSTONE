@@ -3,7 +3,7 @@ import cv2
 import os
 
 # point in camera coordinates (3D)
-P_cam = np.array([-9.0, -3.0, 10.0])
+P_cam = np.array([.0, 0.0, 10.0])
 
 # Intrinsic parameter matrix K
 K = np.array([[477.00580736,   0,  511.86699298],

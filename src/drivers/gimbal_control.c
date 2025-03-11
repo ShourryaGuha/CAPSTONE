@@ -42,7 +42,7 @@
 #define SPIRAL_EXPANSION 1.02f
 #define ARC_STEP 0.05f
 #define LPF_ALPHA 0.2f
-#define MAX_SERVO_DEVIATION 15.0f  // Max allowable deviation from target
+#define MAX_SERVO_DEVIATION 20.0f  // Max allowable deviation from target
 
 typedef struct {
     float pitch;
@@ -167,9 +167,17 @@ int main() {
             angle_offset += angle_step;
             radius += 0.005f;
 
-            float pitch_adjustment = fmax(-MAX_SERVO_DEVIATION, fmin(MAX_SERVO_DEVIATION, cos(angle_offset) * radius));
-            float yaw_adjustment = fmax(-MAX_SERVO_DEVIATION, fmin(MAX_SERVO_DEVIATION, sin(angle_offset) * radius));
+            float pitch_adjustment = cos(angle_offset) * radius;
+            float yaw_adjustment = sin(angle_offset) * radius;
 
+            // Scale adjustment if it would exceed deviation limit
+            if (fabs(target_pitch + pitch_adjustment - target_pitch) > MAX_SERVO_DEVIATION) {
+                pitch_adjustment = (pitch_adjustment > 0 ? 1 : -1) * MAX_SERVO_DEVIATION;
+            }
+            if (fabs(target_yaw + yaw_adjustment - target_yaw) > MAX_SERVO_DEVIATION) {
+                yaw_adjustment = (yaw_adjustment > 0 ? 1 : -1) * MAX_SERVO_DEVIATION;
+            }
+            
             servo_pitch_angle = LPF_ALPHA * map_angle_to_servo(
                 target_pitch + pitch_adjustment, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE,
                 PITCH_SERVO_MIN, PITCH_SERVO_MAX, PITCH_MID_ANGLE, PITCH_MID_SERVO

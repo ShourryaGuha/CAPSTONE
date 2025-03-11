@@ -12,23 +12,34 @@
 #include "laserTOF.h"
 #include "solenoid_control.h"
 
-#define TOLERANCE 0.15 // Midpoint of 0.1 to 0.2m
-#define MAX_ITERATIONS 10
+#define TOLERANCE 0.15
+#define MAX_ITERATIONS 500
 #define SHM_NAME "servo_shared_memory"
 
 // Define USE_SHARED_MEMORY to use shared memory, otherwise use user-defined variables
-#define USE_SHARED_MEMORY
+// #define USE_SHARED_MEMORY
+#define DEBUG
 
-// Servo calibration values
-#define YAW_MIN_ANGLE -90
+#define YAW_MIN_ANGLE -87
 #define YAW_MAX_ANGLE 90
-#define YAW_SERVO_MIN 165
-#define YAW_SERVO_MAX 75
+#define YAW_SERVO_MIN 183
+#define YAW_SERVO_MAX 3
+#define YAW_MID_ANGLE 0
+#define YAW_MID_SERVO 93
 
 #define PITCH_MIN_ANGLE -90
-#define PITCH_MAX_ANGLE 45
-#define PITCH_SERVO_MIN 180
-#define PITCH_SERVO_MAX 60
+#define PITCH_MAX_ANGLE 86
+#define PITCH_SERVO_MIN 176
+#define PITCH_SERVO_MAX 0
+#define PITCH_MID_ANGLE 0
+#define PITCH_MID_SERVO 86
+
+#define SPIRAL_STEP 0.5f
+#define SERVO_ROTATION_SPEED 2333  // microseconds per degree at 4.8V
+#define MIN_STEP_SIZE 0.1f
+#define SPIRAL_EXPANSION 1.02f
+#define ARC_STEP 0.05f  // Constant arc-length steps for even density
+#define LPF_ALPHA 0.2f
 
 typedef struct {
     float pitch;
@@ -39,31 +50,25 @@ typedef struct {
 
 SharedMemory *shared_mem;
 
-float map_angle_to_servo(float angle, float min_angle, float max_angle, float servo_min, float servo_max) {
-    float servo_angle = servo_min + (servo_max - servo_min) * (angle - min_angle) / (max_angle - min_angle);
-    return fmax(servo_min, fmin(servo_max, servo_angle)); // Clamping to ensure bounds
+float map_angle_to_servo(float angle, float min_angle, float max_angle, float min_servo, float max_servo, float mid_angle, float mid_servo) {
+    angle = fmax(min_angle, fmin(max_angle, angle));
+    if (angle < mid_angle) {
+        return mid_servo + (min_servo - mid_servo) * (angle - mid_angle) / (min_angle - mid_angle);
+    } else {
+        return mid_servo + (max_servo - mid_servo) * (angle - mid_angle) / (max_angle - mid_angle);
+    }
+}
+
+int calculate_servo_delay(float angle_difference) {
+    return fabs(angle_difference) * SERVO_ROTATION_SPEED;
 }
 
 void send_to_transmitter(float pitch, float yaw, float measured_distance) {
-    // Placeholder function for transmitting data
     printf("TX: Pitch: %.2f, Yaw: %.2f, Distance: %.2f\n", pitch, yaw, measured_distance);
 }
 
-int receive_from_transmitter() {
-    // Placeholder function for receiving data
-    printf("RX: Receiving updated values...\n");
-    return 0; // Dummy return value for now
-}
-
 void handle_transmitter_signal() {
-    int signal = receive_from_transmitter();
-    if (signal == 1) {
-        printf("Releasing solenoid...\n");
-        releaseSolenoid();
-        sleep(1);  // Wait for 1 second
-        printf("Engaging solenoid...\n");
-        engageSolenoid();
-    }
+    // Placeholder function
 }
 
 int main() {
@@ -72,14 +77,12 @@ int main() {
         return -1;
     }
 
-    // Initialize servos
     servo_t servo_pitch, servo_yaw;
     if (servo_init(&servo_pitch, PWM0_GPIO) < 0 || servo_init(&servo_yaw, PWM1_GPIO) < 0) {
         fprintf(stderr, "Failed to initialize servos\n");
         return -1;
     }
 
-    // Initialize distance sensor
     Laser_Device sensor;
     sensor.device_path = UART2_DEVICE;
     if (Laser_Init(&sensor) != 0) {
@@ -87,11 +90,9 @@ int main() {
         return -1;
     }
 
-    // Initialize solenoid
     initializeSolenoid();
 
 #ifdef USE_SHARED_MEMORY
-    // Attach to shared memory
     int fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
     if (fd == -1) {
         perror("shm_open");
@@ -105,9 +106,8 @@ int main() {
     }
 #endif
 
-    float target_pitch;
-    float target_yaw;
-    float target_distance;
+    float target_pitch, target_yaw, target_distance;
+    float previous_pitch = 0, previous_yaw = 0;
 
     while (1) {
 #ifdef USE_SHARED_MEMORY
@@ -117,50 +117,77 @@ int main() {
         target_distance = shared_mem->distance;
         pthread_mutex_unlock(&shared_mem->mutex);
 #else
-        // User-defined values (replace with actual input as needed)
-        target_pitch = 45.0; // Example static values
-        target_yaw = 30.0;
-        target_distance = 5.0;
+        target_pitch = 0.648363;
+        target_yaw = 1.009765;
+        target_distance = 0.3;
 #endif
 
-        // Map angles to servo values
-        float servo_pitch_angle = map_angle_to_servo(target_pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE, PITCH_SERVO_MIN, PITCH_SERVO_MAX);
-        float servo_yaw_angle = map_angle_to_servo(target_yaw, YAW_MIN_ANGLE, YAW_MAX_ANGLE, YAW_SERVO_MIN, YAW_SERVO_MAX);
+        float servo_pitch_angle = map_angle_to_servo(target_pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE, PITCH_SERVO_MIN, PITCH_SERVO_MAX, PITCH_MID_ANGLE, PITCH_MID_SERVO);
+        float servo_yaw_angle = map_angle_to_servo(target_yaw, YAW_MIN_ANGLE, YAW_MAX_ANGLE, YAW_SERVO_MIN, YAW_SERVO_MAX, YAW_MID_ANGLE, YAW_MID_SERVO);
 
         servo_set_angle(&servo_pitch, servo_pitch_angle);
         servo_set_angle(&servo_yaw, servo_yaw_angle);
-        usleep(500000); // Allow servos to move
+
+        int delay_time_pitch = calculate_servo_delay(target_pitch - previous_pitch);
+        int delay_time_yaw = calculate_servo_delay(target_yaw - previous_yaw);
+        int max_delay = fmax(delay_time_pitch, delay_time_yaw);
+        usleep(max_delay);
+
+        previous_pitch = target_pitch;
+        previous_yaw = target_yaw;
 
         float measured_distance;
+
+        float step_size = 0.05f; // Tiny movements per step
+        float radius = 0.1f;  // Smaller starting radius
+        float angle_offset = 0.0f;
+        float angle_step;
+        float alpha = 0.2f;  // Stronger smoothing
+
+
         int iterations = 0;
 
         do {
             Laser_Measure_Single(&sensor);
             measured_distance = sensor.distance;
+        
             float error = target_distance - measured_distance;
-
-            if (fabs(error) < TOLERANCE) {
-                break;
-            }
-
-            // Gradient-based adjustment
-            float correction_factor = 0.1f; // Adjust as needed
-            float pitch_adjustment = correction_factor * error;
-            float yaw_adjustment = correction_factor * error;
-
-            servo_set_angle(&servo_pitch, fmax(PITCH_SERVO_MIN, fmin(PITCH_SERVO_MAX, servo_pitch_angle + pitch_adjustment)));
-            servo_set_angle(&servo_yaw, fmax(YAW_SERVO_MIN, fmin(YAW_SERVO_MAX, servo_yaw_angle + yaw_adjustment)));
-
-            usleep(500000);
+            if (fabs(error) < TOLERANCE) break;
+        
+            // Adjust angle step based on radius to keep even point density
+            angle_step = step_size / (radius + 1e-6);
+            angle_offset += angle_step;
+            radius += 0.005f;  // Slower expansion
+        
+            float pitch_adjustment = cos(angle_offset) * radius;
+            float yaw_adjustment = sin(angle_offset) * radius;
+        
+            // Blend with previous angles for ultra-smooth motion
+            servo_pitch_angle = alpha * map_angle_to_servo(
+                target_pitch + pitch_adjustment, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE,
+                PITCH_SERVO_MIN, PITCH_SERVO_MAX, PITCH_MID_ANGLE, PITCH_MID_SERVO
+            ) + (1 - alpha) * servo_pitch_angle;
+        
+            servo_yaw_angle = alpha * map_angle_to_servo(
+                target_yaw + yaw_adjustment, YAW_MIN_ANGLE, YAW_MAX_ANGLE,
+                YAW_SERVO_MIN, YAW_SERVO_MAX, YAW_MID_ANGLE, YAW_MID_SERVO
+            ) + (1 - alpha) * servo_yaw_angle;
+        
+            servo_set_angle(&servo_pitch, servo_pitch_angle);
+            servo_set_angle(&servo_yaw, servo_yaw_angle);
+        
+            // Max of pitch and yaw move times, increased by 2.5x for extra slowness
+            float move_time = fmax(fabs(pitch_adjustment), fabs(yaw_adjustment)) * SERVO_ROTATION_SPEED * 2.5;
+            usleep((int) move_time);
+        
             iterations++;
         } while (fabs(target_distance - measured_distance) > TOLERANCE && iterations < MAX_ITERATIONS);
 
         send_to_transmitter(target_pitch, target_yaw, measured_distance);
         handle_transmitter_signal();
-        usleep(100000); // Small delay before next loop iteration
+        usleep(100000);
     }
 
-    // Cleanup
     servo_cleanup(&servo_pitch);
     servo_cleanup(&servo_yaw);
     gpioTerminate();

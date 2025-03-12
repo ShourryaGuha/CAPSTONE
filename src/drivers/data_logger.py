@@ -75,7 +75,7 @@ def main():
     shm_path = "/dev/shm/simple_counter"
 
     # Example usage:
-    dt = 0.1  # Time step (100ms)
+    dt = 0.01  # Time step (100ms)
     process_noise = 0.1  # Process noise variance (acceleration noise)
     measurement_noise = 1.0  # Measurement noise variance (GPS velocity noise)
 
@@ -83,9 +83,10 @@ def main():
 
     roll = 0  # about y-axis in the direction of nose of the drone
     pitch = 0   # about x-axis in the direction of left side of the assembled drone
+    yaw = 0
 
     # Complimentary filter
-    alpha = 0.35  # lesser the value more trust on the acclerometer     
+    alpha = 0.95  # greater the value more trust on the gyroscope     
     
     # Wait for the shared memory file to exist
     while retries < max_retries and running:
@@ -138,13 +139,14 @@ def main():
                 if sensor_data.delta_t != last_delta_t:
                     # Get current timestamp for the log
                     timestamp = datetime.datetime.now().isoformat()
+                    dt = sensor_data.delta_t - last_delta_t
 
-                    roll, pitch = ekf.calculate_roll_pitch(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, dt, alpha, roll, pitch)
+                    roll, pitch, yaw = ekf.calculate_roll_pitch(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz, dt, alpha, roll, pitch, yaw)
                     
                     roll_degrees = np.degrees(roll)
                     pitch_degrees = np.degrees(pitch)
 
-                    print(f"Roll: {roll:.2f} radians, Roll: {roll_degrees:.2f} degrees, Pitch: {pitch:.2f} radians, Pitch: {pitch_degrees:.2f}")
+                    # print(f"Roll: {roll:.2f} radians, Roll: {roll_degrees:.2f} degrees, Pitch: {pitch:.2f} radians, Pitch: {pitch_degrees:.2f}")
                     # Format all data as CSV row
                     log_row = (
                         f"{timestamp},{sensor_data.delta_t:.6f},"

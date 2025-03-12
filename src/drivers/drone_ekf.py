@@ -94,12 +94,12 @@ class EKF_Drone:
         """ Returns the estimated velocity (vx, vy, vz) """
         return self.x.flatten()
     
-    def calculate_roll_pitch(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, dt, alpha, prev_roll, prev_pitch):
+    def calculate_roll_pitch(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, dt, alpha, prev_roll, prev_pitch, prev_yaw):
+        
+        # print(f"Accel X: {accel_x:.2f}, Accel Y: {accel_y:.2f}, Accel Z: {accel_z:.2f}")
+
         accel_roll = np.arctan2(-accel_x, np.sqrt(accel_y**2 + accel_z**2))  # Roll (about Y-axis)
         accel_pitch = np.arctan2(accel_y, np.sqrt(accel_x**2 + accel_z**2))  # Pitch (about X-axis)
-
-        # roll_degrees = np.degrees(accel_roll)
-        # pitch_degrees = np.degrees(accel_pitch)
         
         # print(f"Roll: {accel_roll:.2f} radians, Pitch: {accel_pitch:.2f} radians")
         # print(f"Roll: {roll_degrees:.2f} degrees, Pitch: {pitch_degrees:.2f}")
@@ -108,10 +108,36 @@ class EKF_Drone:
             roll, pitch = accel_roll, accel_pitch
         else:
             # Gyroscope integration for smooth roll & pitch updates
-            roll = alpha * (prev_roll + gyro_y * dt) + (1 - alpha) * accel_roll
-            pitch = alpha * (prev_pitch + gyro_x * dt) + (1 - alpha) * accel_pitch
 
-        return roll, pitch 
+            gyro_roll = prev_roll + gyro_x * dt
+            gyro_pitch = prev_pitch + gyro_y * dt
+
+            # print(f"Gyro Roll: {gyro_roll:.2f} radians, Gyro Pitch: {gyro_pitch:.2f} radians")
+            # print(f"Gyro Roll: {np.degrees(gyro_roll):.2f} degrees, Gyro Pitch: {np.degrees(gyro_pitch):.2f}")
+
+            roll = alpha * gyro_roll + (1 - alpha) * accel_roll
+            pitch = alpha * gyro_pitch + (1 - alpha) * accel_pitch
+            roll_degrees = np.degrees(roll)
+            pitch_degrees = np.degrees(pitch)
+            print(f"Roll: {roll_degrees:.2f} degrees, Pitch: {pitch_degrees:.2f} degrees , delta time: {dt}")
+
+        # # Gyroscope-based Yaw calculation with complementary filter
+        # # Integrate gyroscope yaw (gyro_z is in radians per second)
+        # if prev_yaw == 0:
+        #     yaw = gyro_z * dt  # Assuming the initial yaw is 0
+        # else:
+        #     # Integrating gyroscope yaw and applying complementary filter
+        #     gyro_yaw = prev_yaw + gyro_z * dt
+        #     yaw = alpha * gyro_yaw + (1 - alpha) * prev_yaw  # Since accelerometer doesn't give yaw, we use the previous yaw value
+
+        # # Print the result for yaw in degrees
+        # yaw_degrees = np.degrees(yaw)
+
+        yaw_degrees = 0 # Placeholder for yaw calculation
+        yaw = 0 # Placeholder for yaw calculation
+        # print(f"Roll: {np.degrees(accel_roll):.2f} degrees, Pitch: {np.degrees(accel_pitch):.2f}, Yaw: {yaw_degrees:.2f} degrees")
+
+        return roll, pitch, yaw 
 
 # # Example usage:
 # dt = 0.1  # Time step (100ms)

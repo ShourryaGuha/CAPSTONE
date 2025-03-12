@@ -28,7 +28,17 @@ imu_ay_filtered = low_pass_filter(imu_ay)
 imu_az_filtered = low_pass_filter(imu_az)
 
 class EKF_Drone:
-    def __init__(self, dt, process_noise, measurement_noise):
+    def __init__(self, dt):
+
+        """
+        For rotational acceleration instance variables that will be used to store prev_gyro rotational velocity
+        To calculate delta_gyro = gyro - prev_gyro
+        To calculate rotational acceleration = delta_gyro / dt
+        """
+        self.prev_gyro_x = 0
+        self.prev_gyro_y = 0
+        self.prev_gyro_z = 0
+
         """
         Extended Kalman Filter for velocity estimation using accelerometer and GPS.
 
@@ -42,7 +52,7 @@ class EKF_Drone:
         """
         self.dt = dt  # Time step
         
-        # State vector [vx, vy, vz, phi, theta]
+        # State vector [vx, vy, vz, phi (roll about y), theta (pitch about x)]
         self.x = np.zeros((5, 1))  # Initial state (velocity, roll, pitch)
 
         # State covariance matrix (initial uncertainty)
@@ -101,6 +111,18 @@ class EKF_Drone:
     def get_state(self):
         """ Returns the estimated velocity and angles """
         return self.x.flatten(), self.P
+
+    def get_rotational_acceleration(self, gyro_x, gyro_y, gyro_z):
+        alpha_gyro_x = (gyro_x - self.prev_gyro_x) / self.dt
+        alpha_gyro_y = (gyro_y - self.prev_gyro_y) / self.dt
+        alpha_gyro_z = (gyro_z - self.prev_gyro_z) / self.dt
+
+        self.prev_gyro_x = gyro_x
+        self.prev_gyro_y = gyro_y
+        self.prev_gyro_z = gyro_z
+
+        return alpha_gyro_x, alpha_gyro_y, alpha_gyro_z
+        
     
     def calculate_roll_pitch_complimentary(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, dt, alpha, prev_roll, prev_pitch, prev_yaw):
         

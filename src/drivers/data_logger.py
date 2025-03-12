@@ -8,7 +8,7 @@ import time
 import datetime
 import ctypes
 from ctypes import Structure, c_int, c_float, c_double, Array, POINTER
-from drone_ekf_copy import EKF_Drone
+from drivers.drone_ekf_actual import EKF_Drone
 import numpy as np
 
 # Flag for graceful shutdown
@@ -76,10 +76,8 @@ def main():
 
     # Example usage:
     dt = 0.0225  # Time step based on logged delta_t values dt = sensor_data.delta_t - last_delta_t
-    process_noise = 0.1  # Process noise variance (acceleration noise)
-    measurement_noise = 1.0  # Measurement noise variance (GPS velocity noise)
 
-    ekf = EKF_Drone(dt, process_noise, measurement_noise)
+    ekf = EKF_Drone(dt)
 
     roll = 0  # about y-axis in the direction of nose of the drone
     pitch = 0   # about x-axis in the direction of left side of the assembled drone
@@ -112,8 +110,9 @@ def main():
         # Create a log file
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         log_filename = f"sensor_log.csv"
+        ekf_log_filename = f"ekf_state_log.csv"
         
-        with open(log_filename, 'w') as logfile:
+        with open(log_filename, 'w') as logfile, open(ekf_log_filename, 'w') as ekf_logfile:
             # Write CSV header with correctly named fields
             logfile.write("timestamp,delta_t,")
             logfile.write("pressure,altitude,")
@@ -123,9 +122,13 @@ def main():
             logfile.write("imu_ax,imu_ay,imu_az,imu_gx,imu_gy,imu_gz,")
             logfile.write("distance\n")
             
+            # Write EKF state log header
+            ekf_logfile.write("timestamp,vx,vy,vz,roll,pitch,alpha_x,alpha_y,alpha_z\n")
+            
             last_delta_t = -1
             
             print(f"Python logger: Logging sensor values to {log_filename}")
+            print(f"Python logger: Logging EKF state values to {ekf_log_filename}")
             
             while running:
                 # Read just the first element for now
@@ -139,11 +142,17 @@ def main():
                 if sensor_data.delta_t != last_delta_t:
                     # Get current timestamp for the log
                     timestamp = datetime.datetime.now().isoformat()
-                    # dt = sensor_data.delta_t - last_delta_t
 
                     # roll, pitch, yaw = ekf.calculate_roll_pitch_complimentary(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz, dt, alpha, roll, pitch, yaw)
-
-
+                    
+                    '''
+                    Getting rotational acceleration by differentiating rotational velocities of gyro
+                    '''
+                    gyro_alpha_x, gyro_alpha_y, gyro_alpha_z = ekf.get_rotational_acceleration(sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz)
+                    
+                    '''
+                    Kalman filter section
+                    '''
                     # predict step
                     ekf.predict(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz)
 
@@ -163,7 +172,8 @@ def main():
                     pitch_degrees = np.degrees(pitch)
 
                     print(f"vx: {update_state[0]:.2f}, vy: {update_state[1]:.2f}, vz: {update_state[2]:.2f} Roll: {roll_degrees:.2f} degrees, Pitch: {pitch_degrees:.2f} degrees")
-                    # Format all data as CSV row
+                    
+                    # Format all data as CSV row for sensor log
                     log_row = (
                         f"{timestamp},{sensor_data.delta_t:.6f},"
                         f"{sensor_data.baro_data.pressure:.2f},{sensor_data.baro_data.altitude:.2f},"
@@ -181,6 +191,15 @@ def main():
                     
                     logfile.write(log_row)
                     logfile.flush()  # Ensure data is written to disk
+                    
+                    # Format all data as CSV row for EKF state log
+                    ekf_log_row = (
+                        f"{timestamp},{update_state[0]:.4f},{update_state[1]:.4f},{update_state[2]:.4f},"
+                        f"{roll_degrees:.4f},{pitch_degrees:.4f}, {gyro_alpha_x:.4f}, {gyro_alpha_y:.4f}, {gyro_alpha_z:.4f}\n"
+                    )
+                    
+                    ekf_logfile.write(ekf_log_row)
+                    ekf_logfile.flush()  # Ensure data is written to disk
                     
                     # Convert GPS UTC time to human-readable format (if it's in seconds since epoch)
                     gps_time_str = "N/A"
@@ -207,7 +226,7 @@ def main():
         # Clean up
         shared_mem.close()
         os.close(fd)
-        print(f"Python logger: Shutdown complete. Data saved to {log_filename}")
+        print(f"Python logger: Shutdown complete. Data saved to {log_filename} and {ekf_log_filename}")
         
     except Exception as e:
         print(f"Python logger: Error: {str(e)}")

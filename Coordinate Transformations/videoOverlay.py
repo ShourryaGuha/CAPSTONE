@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from cameraTransform import project_3d_to_2d
-from arduinoInterface import read_arduino_data
+from arduinoInterface import read_arduino_data, send_arduino_release_command
 
 # Define a single 3D point in camera coordinates
 point_3d = np.array([3.0, 1.0, 10.0])  # Example: (X, Y, Z)
@@ -22,6 +22,8 @@ if not cap.isOpened():
     print("Error: Could not open video stream.")
     exit()
 
+colourIndicators = [(0, 0, 255), (0, 255, 255), (0, 255, 0)]
+
 
 while True:
     # Read data from Arduino
@@ -33,7 +35,14 @@ while True:
     else:
         print("No data received from Arduino.")
 
-        # Project the 3D point to 2D
+    #---
+    # TODO: Convert distance, servo1, and servo2 to 3D point coordinates
+    #---
+    
+    # REMOVE
+    # point_3d += 0.1
+
+    # Project the 3D point to 2D
     pixel_coordinates = project_3d_to_2d(point_3d, K, dist)
 
     # Validate the result
@@ -54,17 +63,21 @@ while True:
 
     # Draw the projected point onto the frame
     if 0 <= x < frame.shape[1] and 0 <= y < frame.shape[0]:  # Check if within bounds
-        cv2.circle(frame, (x,y), 8, (0, 255, 0), -1)
-        cv2.circle(frame, (x,y), 40, (0, 255, 0), 2)
-        cv2.circle(frame, (x,y), 40, (0, 0, 0), 3)  
-        cv2.circle(frame, (x,y), 40, (0, 255, 0), 2)  
+        cv2.circle(frame, (x,y), 8, colourIndicators[2], -1)
+        cv2.circle(frame, (x,y), 40, colourIndicators[2], 2)
 
     # Show the modified video feed
     cv2.imshow("Drone Feed with Overlay", frame)
 
-    # Check if 'q' is pressed
+    # Break out of loop if 'q' is pressed
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
+        break
+
+    # Check if Enter is pressed to send data to Arduino
+    if key == ord('\r') or key == ord('\n'):  # Check for Enter key press
+        print("Enter key pressed, sending release command to Arduino.")
+        send_arduino_release_command(1)  # Send value 1 to Arduino
         break
 
 # Release resources

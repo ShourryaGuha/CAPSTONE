@@ -1,5 +1,3 @@
-### TODO: implement quarternion stuff to remove influence of gravity
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

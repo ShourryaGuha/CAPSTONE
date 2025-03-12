@@ -1,5 +1,3 @@
-### TODO: implement quarternion stuff to remove influence of gravity
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -48,7 +46,7 @@ class EKF_Drone:
         self.x = np.zeros((5, 1))  # Initial state (velocity, roll, pitch)
 
         # State covariance matrix (initial uncertainty)
-        self.P = np.diag([10, 10, 10, 10, 10])  # Larger uncertainty for roll and pitch
+        self.P = np.diag([10, 10, 10, 0.01, 0.01])  # Larger uncertainty for roll and pitch
 
         # State transition matrix (F)
         self.F = np.eye(5)
@@ -67,10 +65,10 @@ class EKF_Drone:
         self.H = np.eye(5)
 
         # Process noise covariance (Q)
-        self.Q = np.eye(5) * process_noise
+        self.Q = np.diag([0.01, 0.01, 0.01, 0.0001, 0.0001])  # velocity in m²/s², angles in rad²
 
         # Measurement noise covariance (R)
-        self.R = np.eye(5) * measurement_noise
+        self.R =  np.diag([1.0, 1.0, 1.0, 0.0012, 0.0012])  # Velocity in m²/s², angles in rad²
 
     def predict(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z):
         # Control input (acceleration and angular velocity)

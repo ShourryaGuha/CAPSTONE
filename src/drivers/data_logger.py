@@ -162,7 +162,7 @@ def main():
                     roll_degrees = np.degrees(roll)
                     pitch_degrees = np.degrees(pitch)
 
-                    print(f"Roll: {roll:.2f} radians, Roll: {roll_degrees:.2f} degrees, Pitch: {pitch:.2f} radians, Pitch: {pitch_degrees:.2f}")
+                    print(f"Roll: {roll:.2f} radians, Roll: {roll_degrees:.2f} degrees, Pitch: {pitch:.2f} radians, Pitch: {pitch_degrees:.2f} degrees")
                     # Format all data as CSV row
                     log_row = (
                         f"{timestamp},{sensor_data.delta_t:.6f},"

@@ -222,8 +222,8 @@ void parse_gps_data(GPSData* data, char* buffer) {
         data->longitude = 0.0;
         data->height = 0.0;
         
-        fprintf(stderr, "Invalid GPS fix - RMC Valid: %d, Fix Quality: %d, Satellites: %d\n",
-                rmc_valid, fix_quality, satellites);
+        // fprintf(stderr, "Invalid GPS fix - RMC Valid: %d, Fix Quality: %d, Satellites: %d\n",
+                // rmc_valid, fix_quality, satellites);
     }
 }
 

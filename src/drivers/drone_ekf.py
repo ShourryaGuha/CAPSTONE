@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
 # Load data from CSV file
-data = pd.read_csv("../../Car_Ride_10th/sensor_log40ish.csv")
+data = pd.read_csv("/home/shourryag/Documents/Shourrya_Capstone/CAPSTONE/Car_Ride_10th/sensor_log40ish.csv")
 time = pd.to_datetime(data['timestamp'])  # Convert timestamp to datetime for better handling
 imu_ax = data['imu_ax']
 imu_ay = data['imu_ay']
@@ -98,6 +98,12 @@ class EKF_Drone:
         accel_roll = np.arctan2(-accel_x, np.sqrt(accel_y**2 + accel_z**2))  # Roll (about Y-axis)
         accel_pitch = np.arctan2(accel_y, np.sqrt(accel_x**2 + accel_z**2))  # Pitch (about X-axis)
 
+        # roll_degrees = np.degrees(accel_roll)
+        # pitch_degrees = np.degrees(accel_pitch)
+        
+        # print(f"Roll: {accel_roll:.2f} radians, Pitch: {accel_pitch:.2f} radians")
+        # print(f"Roll: {roll_degrees:.2f} degrees, Pitch: {pitch_degrees:.2f}")
+
         if prev_roll == 0 or prev_pitch == 0:
             roll, pitch = accel_roll, accel_pitch
         else:
@@ -107,73 +113,73 @@ class EKF_Drone:
 
         return roll, pitch 
 
-# Example usage:
-dt = 0.1  # Time step (100ms)
-process_noise = 0.1  # Process noise variance (acceleration noise)
-measurement_noise = 1.0  # Measurement noise variance (GPS velocity noise)
+# # Example usage:
+# dt = 0.1  # Time step (100ms)
+# process_noise = 0.1  # Process noise variance (acceleration noise)
+# measurement_noise = 1.0  # Measurement noise variance (GPS velocity noise)
 
-ekf = EKF_Drone(dt, process_noise, measurement_noise)
+# ekf = EKF_Drone(dt, process_noise, measurement_noise)
 
-# Loop over the data (for each time step)
-predicted_states = []
+# # Loop over the data (for each time step)
+# predicted_states = []
 
-roll = 0  # about y-axis in the direction of nose of the drone
-pitch = 0   # about x-axis in the direction of left side of the assembled drone
+# roll = 0  # about y-axis in the direction of nose of the drone
+# pitch = 0   # about x-axis in the direction of left side of the assembled drone
 
-# Complimentary filter
-alpha = 0.98
+# # Complimentary filter
+# alpha = 0.98
 
-# Lists to store roll, pitch, and time values
-roll_values = []
-pitch_values = []
-# time_values = []
+# # Lists to store roll, pitch, and time values
+# roll_values = []
+# pitch_values = []
+# # time_values = []
 
-for i in range(len(imu_ax_filtered)):
+# for i in range(len(imu_ax_filtered)):
 
-    roll, pitch = ekf.calculate_roll_pitch(imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i], imu_gyro_x[i], imu_gyro_y[i], dt, alpha, roll, pitch)
+#     roll, pitch = ekf.calculate_roll_pitch(imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i], imu_gyro_x[i], imu_gyro_y[i], dt, alpha, roll, pitch)
 
-    #  # Print roll and pitch angles
-    # print(f"Step {i}: Roll = {np.degrees(roll):.2f} degrees, Pitch = {np.degrees(pitch):.2f} degrees")
+#     #  # Print roll and pitch angles
+#     # print(f"Step {i}: Roll = {np.degrees(roll):.2f} degrees, Pitch = {np.degrees(pitch):.2f} degrees")
 
-    # Store roll, pitch, and time values
-    roll_values.append(np.degrees(roll))
-    pitch_values.append(np.degrees(pitch))
-    # time_values.append(time[i])
+#     # Store roll, pitch, and time values
+#     roll_values.append(np.degrees(roll))
+#     pitch_values.append(np.degrees(pitch))
+#     # time_values.append(time[i])
 
-    # assuming correct coordinate transfomr from IMU to world frame from chatgpt
+#     # assuming correct coordinate transfomr from IMU to world frame from chatgpt
 
-    # R_mat = np.array([
-    #     [np.cos(pitch), 0, -np.sin(pitch)],
-    #     [np.sin(roll) * np.sin(pitch), np.cos(roll), np.sin(roll) * np.cos(pitch)],
-    #     [np.cos(roll) * np.sin(pitch), -np.sin(roll), np.cos(roll) * np.cos(pitch)]
-    # ])
+#     # R_mat = np.array([
+#     #     [np.cos(pitch), 0, -np.sin(pitch)],
+#     #     [np.sin(roll) * np.sin(pitch), np.cos(roll), np.sin(roll) * np.cos(pitch)],
+#     #     [np.cos(roll) * np.sin(pitch), -np.sin(roll), np.cos(roll) * np.cos(pitch)]
+#     # ])
 
-    # # Convert acceleration to world frame & remove gravity
-    # accel_world = R_mat @ np.array([imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i]])
+#     # # Convert acceleration to world frame & remove gravity
+#     # accel_world = R_mat @ np.array([imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i]])
 
-    # # might need to multiple g = np.array([0, 0, -9.81]) with R_mat, check math and chatgpt
-    # accel_linear = accel_world - np.array([0, 0, -9.81])
+#     # # might need to multiple g = np.array([0, 0, -9.81]) with R_mat, check math and chatgpt
+#     # accel_linear = accel_world - np.array([0, 0, -9.81])
 
-    # # Access x, y, and z values of accel_linear
-    # accel_linear_x = accel_linear[0]
-    # accel_linear_y = accel_linear[1]
-    # accel_linear_z = accel_linear[2]
+#     # # Access x, y, and z values of accel_linear
+#     # accel_linear_x = accel_linear[0]
+#     # accel_linear_y = accel_linear[1]
+#     # accel_linear_z = accel_linear[2]
 
-    # ekf.predict(accel_linear_x, accel_linear_y, accel_linear_z)
+#     # ekf.predict(accel_linear_x, accel_linear_y, accel_linear_z)
 
-    # ekf.update(velocity_x[i], velocity_y[i], velocity_z[i])
+#     # ekf.update(velocity_x[i], velocity_y[i], velocity_z[i])
 
-    # predicted_state = ekf.get_state()
-    # predicted_states.append(predicted_state)
+#     # predicted_state = ekf.get_state()
+#     # predicted_states.append(predicted_state)
 
-# Plot roll and pitch vs time
-plt.figure(figsize=(10, 6))
-plt.plot(time, roll_values, label='Roll (degrees)')
-plt.plot(time, pitch_values, label='Pitch (degrees)')
-plt.xlabel('Time')
-plt.ylabel('Angle (degrees)')
-plt.title('Roll and Pitch vs Time')
-plt.legend()
-plt.grid(True)
-plt.show()
+# # Plot roll and pitch vs time
+# plt.figure(figsize=(10, 6))
+# plt.plot(time, roll_values, label='Roll (degrees)')
+# plt.plot(time, pitch_values, label='Pitch (degrees)')
+# plt.xlabel('Time')
+# plt.ylabel('Angle (degrees)')
+# plt.title('Roll and Pitch vs Time')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
 

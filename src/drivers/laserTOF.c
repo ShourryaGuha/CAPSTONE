@@ -116,7 +116,9 @@ int Laser_Measure_Single(Laser_Device *device) {
     uint8_t response[9];
     int bytes_read = read(device->fd, response, sizeof(response));
     if (bytes_read <= 0) {
+        #ifdef DEBUG
         fprintf(stderr, "No data received from sensor.\n");
+        #endif
         return -1;
     }
 
@@ -150,7 +152,9 @@ int spin_laser(Laser_Device *device){
     uint8_t response[9];
     int bytes_read = read(device->fd, response, sizeof(response));
     if (bytes_read <= 0) {
+        #ifdef DEBUG
         fprintf(stderr, "No data received from sensor.\n");
+        #endif
         return -1;
     }
     parse_measurement(response, &(device->distance));

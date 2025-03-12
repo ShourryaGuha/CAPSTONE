@@ -85,7 +85,7 @@ def main():
     pitch = 0   # about x-axis in the direction of left side of the assembled drone
 
     # Complimentary filter
-    alpha = 0.98     
+    alpha = 0.35  # lesser the value more trust on the acclerometer     
     
     # Wait for the shared memory file to exist
     while retries < max_retries and running:
@@ -141,8 +141,8 @@ def main():
 
                     roll, pitch = ekf.calculate_roll_pitch(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, dt, alpha, roll, pitch)
                     
-                    roll_degrees = np.degrees(ekf.roll)
-                    pitch_degrees = np.degrees(ekf.pitch)
+                    roll_degrees = np.degrees(roll)
+                    pitch_degrees = np.degrees(pitch)
 
                     print(f"Roll: {roll:.2f} radians, Roll: {roll_degrees:.2f} degrees, Pitch: {pitch:.2f} radians, Pitch: {pitch_degrees:.2f}")
                     # Format all data as CSV row

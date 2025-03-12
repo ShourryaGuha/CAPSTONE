@@ -148,7 +148,7 @@ int main() {
         fprintf(stderr, "Failed to initialize laser sensor\n");
         return 1;
     }
-    Laser_Measure_Continuous(&laser_sensor);
+    // Laser_Measure_Continuous(&laser_sensor);
 
     // Main loop - increment the counter
     int i = 0;

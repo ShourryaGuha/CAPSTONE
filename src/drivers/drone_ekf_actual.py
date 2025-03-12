@@ -39,6 +39,13 @@ class EKF_Drone:
         self.prev_gyro_y = 0
         self.prev_gyro_z = 0
 
+        '''
+        For roll, pitch, yaw calculation using just gyroscope for debugging EKF
+        '''
+        self.prev_gyro_roll = 0
+        self.prev_gyro_pitch = 0
+        self.prev_gyro_yaw = 0
+
         """
         Extended Kalman Filter for velocity estimation using accelerometer and GPS.
 
@@ -122,6 +129,15 @@ class EKF_Drone:
         self.prev_gyro_z = gyro_z
 
         return alpha_gyro_x, alpha_gyro_y, alpha_gyro_z
+
+    def get_gyro_roll_pitch(self, gyro_x, gyro_y):
+        gyro_roll = self.prev_gyro_roll + gyro_y * self.dt
+        gyro_pitch = self.prev_gyro_pitch + gyro_x * self.dt
+
+        self.prev_gyro_roll = gyro_roll
+        self.prev_gyro_pitch = gyro_pitch
+
+        return gyro_roll, gyro_pitch
         
     
     def calculate_roll_pitch_complimentary(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, dt, alpha, prev_roll, prev_pitch, prev_yaw):

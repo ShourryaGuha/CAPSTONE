@@ -8,7 +8,7 @@ import time
 import datetime
 import ctypes
 from ctypes import Structure, c_int, c_float, c_double, Array, POINTER
-from drivers.drone_ekf_actual import EKF_Drone
+from drone_ekf_actual import EKF_Drone
 import numpy as np
 
 # Flag for graceful shutdown
@@ -123,7 +123,7 @@ def main():
             logfile.write("distance\n")
             
             # Write EKF state log header
-            ekf_logfile.write("timestamp,vx,vy,vz,roll,pitch,alpha_x,alpha_y,alpha_z\n")
+            ekf_logfile.write("timestamp,kf_vx,kf_vy,kf_vz,kf_roll,kf_pitch,gyro_roll_degrees,gyro_pitch_degrees,accel_roll_degrees,accel_pitch_degrees,alpha_x,alpha_y,alpha_z\n")
             
             last_delta_t = -1
             
@@ -150,6 +150,12 @@ def main():
                     '''
                     gyro_alpha_x, gyro_alpha_y, gyro_alpha_z = ekf.get_rotational_acceleration(sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz)
                     
+                    '''
+                    Get and lof gyro roll and pitch standalon for visual debugging purposes
+                    '''
+                    gyro_roll, gyro_pitch= ekf.get_gyro_roll_pitch(sensor_data.imu_data.gx, sensor_data.imu_data.gy)
+                    gyro_roll_degrees = np.degrees(gyro_roll)
+                    gyro_pitch_degrees = np.degrees(gyro_pitch)
                     '''
                     Kalman filter section
                     '''
@@ -195,7 +201,10 @@ def main():
                     # Format all data as CSV row for EKF state log
                     ekf_log_row = (
                         f"{timestamp},{update_state[0]:.4f},{update_state[1]:.4f},{update_state[2]:.4f},"
-                        f"{roll_degrees:.4f},{pitch_degrees:.4f}, {gyro_alpha_x:.4f}, {gyro_alpha_y:.4f}, {gyro_alpha_z:.4f}\n"
+                        f"{roll_degrees:.4f},{pitch_degrees:.4f}," 
+                        f"{gyro_roll_degrees:.4f},{gyro_pitch_degrees:.4f},"
+                        f"{np.degrees(accel_roll):.4f},{np.degrees(accel_pitch):.4f},"
+                        f"{gyro_alpha_x:.4f}, {gyro_alpha_y:.4f}, {gyro_alpha_z:.4f}\n"
                     )
                     
                     ekf_logfile.write(ekf_log_row)

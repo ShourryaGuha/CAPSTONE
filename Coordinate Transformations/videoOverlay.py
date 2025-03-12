@@ -12,7 +12,6 @@ K = np.array([[477.00580736,   0,  511.86699298],
               [  0,   0,    1]])
 
 # Distortion coefficients vector
-# Format: [k1, k2, p1, p2, k3]
 dist = np.array([-0.29936293, 0.10959204, 0.00269389, -0.00213927, -0.02094805])
 
 # Open the video feed from the EWRF OTG receiver
@@ -24,50 +23,70 @@ if not cap.isOpened():
 
 colourIndicators = [(0, 0, 255), (0, 255, 255), (0, 255, 0)]
 
+distance, servo1, servo2, confirmation, connected = 0, 0, 0, 0, 1
 
 while True:
     # Read data from Arduino
     arduino_data = read_arduino_data()  # Call the function from arduino_reader.py
     
     if arduino_data:
-        distance, servo1, servo2, confirmation = arduino_data
+        print("-----------------------------------")
+        distance, servo1, servo2, confirmation, connected = arduino_data
         print(f"Distance: {distance}, Servo1: {servo1}, Servo2: {servo2}, Confirmation: {confirmation}")
     else:
         print("No data received from Arduino.")
 
-    #---
-    # TODO: Convert distance, servo1, and servo2 to 3D point coordinates
-    #---
-    
-    # REMOVE
-    # point_3d += 0.1
+    print(distance, servo1, servo2, confirmation, connected)
 
-    # Project the 3D point to 2D
-    pixel_coordinates = project_3d_to_2d(point_3d, K, dist)
+    # If connected is 0, just show "No Connection"
+    if connected == 0:
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Failed to capture frame.")
+            break
 
-    # Validate the result
-    if pixel_coordinates is None or pixel_coordinates.shape != (2,):
-        print("Error: Invalid projected pixel coordinates.")
-        exit()
+        # Resize the frame to 1010x757 (Based on calibration)
+        frame = cv2.resize(frame, (1010, 757))
 
-    # Extract (x, y) from the numpy array
-    x, y = int(pixel_coordinates[0]), int(pixel_coordinates[1])
+        # Display "No Connection" on the frame
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(frame, "No Connection", (700, 100), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
-    ret, frame = cap.read()
-    if not ret:
-        print("Error: Failed to capture frame.")
-        break
+        # Show the modified video feed
+        cv2.imshow("Drone Feed with Overlay", frame)
 
-    # Resize the frame to 1010x757 (Based on calibration)
-    frame = cv2.resize(frame, (1010, 757))
+    else:
+        # --- 
+        # Perform coordinate transformations if connected
+        # TODO: Convert distance, servo1, and servo2 to 3D point coordinates
+        # --- 
+        
+        # Project the 3D point to 2D
+        pixel_coordinates = project_3d_to_2d(point_3d, K, dist)
 
-    # Draw the projected point onto the frame
-    if 0 <= x < frame.shape[1] and 0 <= y < frame.shape[0]:  # Check if within bounds
-        cv2.circle(frame, (x,y), 8, colourIndicators[2], -1)
-        cv2.circle(frame, (x,y), 40, colourIndicators[2], 2)
+        # Validate the result
+        if pixel_coordinates is None or pixel_coordinates.shape != (2,):
+            print("Error: Invalid projected pixel coordinates.")
+            exit()
 
-    # Show the modified video feed
-    cv2.imshow("Drone Feed with Overlay", frame)
+        # Extract (x, y) from the numpy array
+        x, y = int(pixel_coordinates[0]), int(pixel_coordinates[1])
+
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Failed to capture frame.")
+            break
+
+        # Resize the frame to 1010x757 (Based on calibration)
+        frame = cv2.resize(frame, (1010, 757))
+
+        # Draw the projected point onto the frame
+        if 0 <= x < frame.shape[1] and 0 <= y < frame.shape[0]:  # Check if within bounds
+            cv2.circle(frame, (x, y), 8, colourIndicators[confirmation], -1)
+            cv2.circle(frame, (x, y), 40, colourIndicators[confirmation], 2)
+
+        # Show the modified video feed
+        cv2.imshow("Drone Feed with Overlay", frame)
 
     # Break out of loop if 'q' is pressed
     key = cv2.waitKey(1) & 0xFF
@@ -77,6 +96,13 @@ while True:
     # Check if Enter is pressed to send data to Arduino
     if key == ord('\r') or key == ord('\n'):  # Check for Enter key press
         print("Enter key pressed, sending release command to Arduino.")
+
+        cv2.circle(frame, (x, y), 8, (128, 128, 128), -1)
+        cv2.circle(frame, (x, y), 40, (128, 128, 128), 2)
+
+        cap.release()
+        cv2.destroyAllWindows()
+
         send_arduino_release_command(1)  # Send value 1 to Arduino
         break
 

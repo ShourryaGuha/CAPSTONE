@@ -180,8 +180,8 @@ def main():
                     ekf.predict(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz)
 
                     # update step
-                    accel_roll = np.arctan2(-sensor_data.imu_data.ax, np.sqrt(sensor_data.imu_data.ay**2 + sensor_data.imu_data.az**2))
-                    accel_pitch = np.arctan2(sensor_data.imu_data.ay, np.sqrt(sensor_data.imu_data.ax**2 + sensor_data.imu_data.az**2))
+                    accel_roll = np.arctan2(sensor_data.imu_data.ax, np.sqrt(sensor_data.imu_data.ay**2 + sensor_data.imu_data.az**2))
+                    accel_pitch = np.arctan2(-sensor_data.imu_data.ay, np.sqrt(sensor_data.imu_data.ax**2 + sensor_data.imu_data.az**2))
 
                     ekf.update(sensor_data.gps_data.velocity_x, sensor_data.gps_data.velocity_y, sensor_data.gps_data.velocity_z, accel_roll, accel_pitch)
                     

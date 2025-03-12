@@ -133,7 +133,7 @@ def main():
             ekf_logfile.write("kf_vx,kf_vy,kf_vz,kf_roll,kf_pitch,")
             ekf_logfile.write("gyro_roll_degrees,gyro_pitch_degrees,")
             ekf_logfile.write("accel_roll_degrees,accel_pitch_degrees,")
-            ekf_logfile.write("alpha_x,alpha_y,alpha_z\n")
+            ekf_logfile.write("alpha_x,alpha_y,alpha_z")
             ekf_logfile.write("filtered_gyro_x,filtered_gyro_y,filtered_gyro_z\n")
             
             last_delta_t = -1
@@ -226,7 +226,7 @@ def main():
                         f"{update_state[0]:.4f},{update_state[1]:.4f},{update_state[2]:.4f},{roll_degrees:.4f},{pitch_degrees:.4f}," 
                         f"{gyro_roll_degrees:.4f},{gyro_pitch_degrees:.4f},"
                         f"{np.degrees(accel_roll):.4f},{np.degrees(accel_pitch):.4f},"
-                        f"{gyro_alpha_x:.4f}, {gyro_alpha_y:.4f}, {gyro_alpha_z:.4f}\n"
+                        f"{gyro_alpha_x:.4f}, {gyro_alpha_y:.4f}, {gyro_alpha_z:.4f}"
                         f"{gyro_x_lf:.4f},{gyro_y_lf:.4f},{gyro_z_lf:.4f}\n"
                     )
                     

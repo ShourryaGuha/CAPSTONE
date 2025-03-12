@@ -4,7 +4,7 @@ from cameraTransform import project_3d_to_2d
 from arduinoInterface import read_arduino_data
 
 # Define a single 3D point in camera coordinates
-point_3d = np.array([0.0, 0.0, 10.0])  # Example: (X, Y, Z)
+point_3d = np.array([3.0, 1.0, 10.0])  # Example: (X, Y, Z)
 
 # Intrinsic parameter matrix (camera matrix K)
 K = np.array([[477.00580736,   0,  511.86699298],
@@ -21,6 +21,7 @@ cap = cv2.VideoCapture(0)  # Adjust index if needed
 if not cap.isOpened():
     print("Error: Could not open video stream.")
     exit()
+
 
 while True:
     # Read data from Arduino
@@ -48,21 +49,22 @@ while True:
         print("Error: Failed to capture frame.")
         break
 
-    # Resize the frame to 1010x757
+    # Resize the frame to 1010x757 (Based on calibration)
     frame = cv2.resize(frame, (1010, 757))
 
     # Draw the projected point onto the frame
     if 0 <= x < frame.shape[1] and 0 <= y < frame.shape[0]:  # Check if within bounds
         cv2.circle(frame, (x,y), 8, (0, 255, 0), -1)
         cv2.circle(frame, (x,y), 40, (0, 255, 0), 2)
-        cv2.circle(frame, (x, y), 40, (0, 0, 0), 3)  
-        cv2.circle(frame, (x, y), 40, (0, 255, 0), 2)  
+        cv2.circle(frame, (x,y), 40, (0, 0, 0), 3)  
+        cv2.circle(frame, (x,y), 40, (0, 255, 0), 2)  
 
     # Show the modified video feed
     cv2.imshow("Drone Feed with Overlay", frame)
 
-    # Press 'q' to exit
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    # Check if 'q' is pressed
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):
         break
 
 # Release resources

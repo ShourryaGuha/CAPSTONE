@@ -1,4 +1,4 @@
-# arduino_reader.py
+# arduinoInterface.py
 import serial
 
 def read_arduino_data(arduino_port='/dev/ttyUSB0', baud_rate=9600):

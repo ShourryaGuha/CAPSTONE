@@ -94,7 +94,7 @@ class EKF_Drone:
         """ Returns the estimated velocity (vx, vy, vz) """
         return self.x.flatten()
     
-    def calculate_roll_pitch(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, dt, alpha, prev_roll, prev_pitch, prev_yaw):
+    def calculate_roll_pitch_complimentary(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, dt, alpha, prev_roll, prev_pitch, prev_yaw):
         
         # print(f"Accel X: {accel_x:.2f}, Accel Y: {accel_y:.2f}, Accel Z: {accel_z:.2f}")
 

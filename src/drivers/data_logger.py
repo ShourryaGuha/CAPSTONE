@@ -8,7 +8,7 @@ import time
 import datetime
 import ctypes
 from ctypes import Structure, c_int, c_float, c_double, Array, POINTER
-from drone_ekf import EKF_Drone
+from drone_ekf_copy import EKF_Drone
 import numpy as np
 
 # Flag for graceful shutdown
@@ -75,7 +75,7 @@ def main():
     shm_path = "/dev/shm/simple_counter"
 
     # Example usage:
-    dt = 0.01  # Time step (100ms)
+    dt = 0.0225  # Time step based on logged delta_t values dt = sensor_data.delta_t - last_delta_t
     process_noise = 0.1  # Process noise variance (acceleration noise)
     measurement_noise = 1.0  # Measurement noise variance (GPS velocity noise)
 
@@ -139,10 +139,24 @@ def main():
                 if sensor_data.delta_t != last_delta_t:
                     # Get current timestamp for the log
                     timestamp = datetime.datetime.now().isoformat()
-                    dt = sensor_data.delta_t - last_delta_t
+                    # dt = sensor_data.delta_t - last_delta_t
 
-                    roll, pitch, yaw = ekf.calculate_roll_pitch(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz, dt, alpha, roll, pitch, yaw)
+                    roll, pitch, yaw = ekf.calculate_roll_pitch_complimentary(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz, dt, alpha, roll, pitch, yaw)
+
+
+                    # # predict step
+                    # ekf.predict(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz)
+
+                    # # update step
+                    # accel_roll = np.arctan2(-sensor_data.imu_data.ax, np.sqrt(sensor_data.imu_data.ay**2 + sensor_data.imu_data.az**2))
+                    # accel_pitch = np.arctan2(sensor_data.imu_data.ay, np.sqrt(sensor_data.imu_data.ax**2 + sensor_data.imu_data.az**2))
+
+                    # ekf.update(sensor_data.gps_data.velocity_x, sensor_data.gps_data.velocity_y, sensor_data.gps_data.velocity_z, accel_roll, accel_pitch)
                     
+                    # update_state, update_covariance = ekf.get_state()
+
+
+
                     roll_degrees = np.degrees(roll)
                     pitch_degrees = np.degrees(pitch)
 

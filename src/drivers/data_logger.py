@@ -141,26 +141,28 @@ def main():
                     timestamp = datetime.datetime.now().isoformat()
                     # dt = sensor_data.delta_t - last_delta_t
 
-                    roll, pitch, yaw = ekf.calculate_roll_pitch_complimentary(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz, dt, alpha, roll, pitch, yaw)
+                    # roll, pitch, yaw = ekf.calculate_roll_pitch_complimentary(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz, dt, alpha, roll, pitch, yaw)
 
 
-                    # # predict step
-                    # ekf.predict(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz)
+                    # predict step
+                    ekf.predict(sensor_data.imu_data.ax, sensor_data.imu_data.ay, sensor_data.imu_data.az, sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz)
 
-                    # # update step
-                    # accel_roll = np.arctan2(-sensor_data.imu_data.ax, np.sqrt(sensor_data.imu_data.ay**2 + sensor_data.imu_data.az**2))
-                    # accel_pitch = np.arctan2(sensor_data.imu_data.ay, np.sqrt(sensor_data.imu_data.ax**2 + sensor_data.imu_data.az**2))
+                    # update step
+                    accel_roll = np.arctan2(-sensor_data.imu_data.ax, np.sqrt(sensor_data.imu_data.ay**2 + sensor_data.imu_data.az**2))
+                    accel_pitch = np.arctan2(sensor_data.imu_data.ay, np.sqrt(sensor_data.imu_data.ax**2 + sensor_data.imu_data.az**2))
 
-                    # ekf.update(sensor_data.gps_data.velocity_x, sensor_data.gps_data.velocity_y, sensor_data.gps_data.velocity_z, accel_roll, accel_pitch)
+                    ekf.update(sensor_data.gps_data.velocity_x, sensor_data.gps_data.velocity_y, sensor_data.gps_data.velocity_z, accel_roll, accel_pitch)
                     
-                    # update_state, update_covariance = ekf.get_state()
+                    update_state, update_covariance = ekf.get_state()
 
-
+                    roll = update_state[3]
+                    pitch = update_state[4]
+                    # print(f"Roll: {roll:.2f}, Pitch: {pitch:.2f}")
 
                     roll_degrees = np.degrees(roll)
                     pitch_degrees = np.degrees(pitch)
 
-                    # print(f"Roll: {roll:.2f} radians, Roll: {roll_degrees:.2f} degrees, Pitch: {pitch:.2f} radians, Pitch: {pitch_degrees:.2f}")
+                    print(f"Roll: {roll:.2f} radians, Roll: {roll_degrees:.2f} degrees, Pitch: {pitch:.2f} radians, Pitch: {pitch_degrees:.2f}")
                     # Format all data as CSV row
                     log_row = (
                         f"{timestamp},{sensor_data.delta_t:.6f},"

@@ -74,7 +74,10 @@ class EKF_Drone:
 
     def predict(self, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z):
         # Control input (acceleration and angular velocity)
-        u = np.array([accel_x, accel_y, accel_z, gyro_x, gyro_y]).reshape(5, 1)
+        # IMPORTANT gyro_x corresponds to pitch and gyro_y corresponds to roll
+        # and state vector is [vx, vy, vz, roll, pitch]
+
+        u = np.array([accel_x, accel_y, accel_z, gyro_y, gyro_x]).reshape(5, 1)
 
         # Predict state (velocity and angles)
         self.x = self.F @ self.x + self.B @ u

@@ -21,11 +21,13 @@ VTG: ground speed information
 
 */
 
+// #define DEBUG
+
 //reading serial
 #define GPS_BAUD_RATE B9600
 #define UART_DEVICE "/dev/serial0"
 #define QUEUE_SIZE 500
-#define GPS_BUFFER_SIZE 64
+#define GPS_BUFFER_SIZE 1024
 
 //velocity calculations
 #define KNOTS_TO_MPS 0.514444
@@ -68,7 +70,8 @@ typedef struct {
 
 static CircularQueue queue;
 static GPSData gps_data;
-static char buffer[GPS_BUFFER_SIZE];
+static char buffer[GPS_BUFFER_SIZE] = {0};
+static int buffer_pos = 0;
 static int uart_fd = -1;
 
 
@@ -143,73 +146,100 @@ void find_acceleration(GPSData* data) {
     }
 }
 
-void parse_gps_data(GPSData* data, char* buffer) {
-    char* line = strtok(buffer, "\n");
+void parse_nmea_sentence(GPSData* data, const char* sentence) {
+    char sentence_copy[128];
+    strncpy(sentence_copy, sentence, sizeof(sentence_copy) - 1);
+    sentence_copy[sizeof(sentence_copy) - 1] = '\0';  // Ensure null termination
+    
     double speed_knots = 0.0;
     double course = 0.0;
-    int satellites = 0;
     int fix_quality = 0;
-    int rmc_valid = 0;  // Flag for RMC validity
+    int satellites = 0;
+    int valid = 0;
     
-    while (line != NULL) {
-        if (strncmp(line, "$GNGGA", 6) == 0 || strncmp(line, "$GPGGA", 6) == 0) {
-            char* field = strtok(line, ",");
-            int field_count = 0;
+    #ifdef DEBUG
+    printf("Processing NMEA: %s", sentence_copy);
+    #endif
+    
+    // Check for GGA sentence (position and fix data)
+    if (strncmp(sentence_copy, "$GNGGA", 6) == 0 || strncmp(sentence_copy, "$GPGGA", 6) == 0) {
+        char* fields[15] = {NULL};  // GGA has 15 fields
+        int field_count = 0;
+        
+        // Split the sentence into fields
+        char* field = strtok(sentence_copy, ",");
+        while (field != NULL && field_count < 15) {
+            fields[field_count++] = field;
+            field = strtok(NULL, ",");
+        }
+        
+        // Process fields if we have enough
+        if (field_count >= 10) {
+            // UTC time
+            if (fields[1] && *fields[1])
+                data->utc_time = parse_utc_time(fields[1]);
             
-            while (field != NULL) {
-                switch(field_count) {
-                    case 1:  // UTC time
-                        data->utc_time = parse_utc_time(field);
-                        break;
-                    case 2:  // Latitude
-                        data->latitude = nmea_to_decimal(field, *(field + 12));
-                        break;
-                    case 4:  // Longitude
-                        data->longitude = nmea_to_decimal(field, *(field + 12));
-                        break;
-                    case 6:  // Fix quality
-                        fix_quality = field[0] ? atoi(field) : 0;
-                        break;
-                    case 7:  // Number of satellites
-                        satellites = field[0] ? atoi(field) : 0;
-                        break;
-                    case 9:  // Altitude
-                        data->height = field[0] ? atof(field) : 0.0;
-                        break;
-                }
-                field = strtok(NULL, ",");
-                field_count++;
+            // Latitude
+            if (fields[2] && *fields[2] && fields[3] && *fields[3])
+                data->latitude = nmea_to_decimal(fields[2], *fields[3]);
+            
+            // Longitude
+            if (fields[4] && *fields[4] && fields[5] && *fields[5])
+                data->longitude = nmea_to_decimal(fields[4], *fields[5]);
+            
+            // Fix quality
+            if (fields[6] && *fields[6])
+                fix_quality = atoi(fields[6]);
+            
+            // Number of satellites
+            if (fields[7] && *fields[7])
+                satellites = atoi(fields[7]);
+            
+            // Altitude
+            if (fields[9] && *fields[9])
+                data->height = atof(fields[9]);
+            
+            // Update valid flag if fix quality is good and we have enough satellites
+            if (fix_quality > 0 && satellites >= MIN_SATELLITES_FOR_FIX)
+                valid = 1;
+        }
+    }
+    // Check for RMC sentence (recommended minimum data)
+    else if (strncmp(sentence_copy, "$GNRMC", 6) == 0 || strncmp(sentence_copy, "$GPRMC", 6) == 0) {
+        char* fields[13] = {NULL};  // RMC has 13 fields
+        int field_count = 0;
+        
+        // Split the sentence into fields
+        char* field = strtok(sentence_copy, ",");
+        while (field != NULL && field_count < 13) {
+            fields[field_count++] = field;
+            field = strtok(NULL, ",");
+        }
+        
+        // Process fields if we have enough
+        if (field_count >= 9) {
+            // Status - 'A'=Active, 'V'=Void
+            if (fields[2] && *fields[2])
+                valid = (*fields[2] == 'A');
+            
+            // Speed in knots
+            if (fields[7] && *fields[7])
+                speed_knots = atof(fields[7]);
+            
+            // Course over ground
+            if (fields[8] && *fields[8])
+                course = atof(fields[8]);
+            
+            // Only update velocity and acceleration if data is valid
+            if (valid) {
+                find_velocity(data, speed_knots, course);
+                find_acceleration(data);
             }
         }
-        else if (strncmp(line, "$GNRMC", 6) == 0 || strncmp(line, "$GPRMC", 6) == 0) {
-            char* field = strtok(line, ",");
-            int field_count = 0;
-            
-            while (field != NULL) {
-                switch(field_count) {
-                    case 2:  // Validity flag
-                        rmc_valid = (field[0] == 'A');  // 'A' for active, 'V' for void
-                        break;
-                    case 7:  // Speed in knots
-                        speed_knots = field[0] ? atof(field) : 0.0;
-                        break;
-                    case 8:  // Course over ground
-                        course = field[0] ? atof(field) : 0.0;
-                        break;
-                }
-                field = strtok(NULL, ",");
-                field_count++;
-            }
-        }
-        line = strtok(NULL, "\n");
     }
     
-    // Only process data if we have both a valid RMC fix and enough satellites
-    if (rmc_valid && fix_quality > 0 && satellites >= MIN_SATELLITES_FOR_FIX) {
-        find_velocity(data, speed_knots, course);
-        find_acceleration(data);
-    } else {
-        // If no valid fix, zero out all dynamic data
+    // If no valid data, reset dynamic values
+    if (!valid) {
         data->velocity_x = 0.0;
         data->velocity_y = 0.0;
         data->velocity_z = 0.0;
@@ -217,6 +247,7 @@ void parse_gps_data(GPSData* data, char* buffer) {
         data->accel_y = 0.0;
         data->accel_z = 0.0;
         
+<<<<<<< HEAD
         // Zero out position data as well since it's not reliable
         data->latitude = 0.0;
         data->longitude = 0.0;
@@ -224,6 +255,15 @@ void parse_gps_data(GPSData* data, char* buffer) {
         
         // fprintf(stderr, "Invalid GPS fix - RMC Valid: %d, Fix Quality: %d, Satellites: %d\n",
                 // rmc_valid, fix_quality, satellites);
+=======
+        // Don't reset position data on every invalid sentence
+        // Only reset it if fix quality is explicitly bad
+        // if (fix_quality == 0) {
+        //     data->latitude = 0.0;
+        //     data->longitude = 0.0;
+        //     data->height = 0.0;
+        // }
+>>>>>>> GPS_Driver
     }
 }
 
@@ -256,14 +296,125 @@ void init_gps_data(GPSData *data) {
     memset(data, 0, sizeof(GPSData));
 }
 
-int read_gps_data(char *buffer, size_t buffer_size) {
-    int bytesRead = read(uart_fd, buffer, buffer_size - 1);
-    if (bytesRead < 0) {
-        //fprintf(stderr, "Error reading from UART: %s\n", strerror(errno));
-        return -1;
+int read_gps_data() {
+    char temp_buf[128];  // Temporary buffer for reading
+    int bytes_read = read(uart_fd, temp_buf, sizeof(temp_buf) - 1);
+    
+    if (bytes_read <= 0) {
+        return 0;
     }
-    buffer[bytesRead] = '\0'; // Null-terminate the buffer
-    return bytesRead;
+    
+    // Add new data to buffer
+    if (buffer_pos + bytes_read >= GPS_BUFFER_SIZE) {
+        // Buffer overflow, reset
+        buffer_pos = 0;
+    }
+    
+    memcpy(buffer + buffer_pos, temp_buf, bytes_read);
+    buffer_pos += bytes_read;
+    buffer[buffer_pos] = '\0';  // Null terminate
+    
+    return 1;  // Data was read
+}
+
+int extract_nmea_sentence(char *sentence, int max_len) {
+    // Validate input parameters
+    if (!sentence || max_len <= 0) {
+        return 0;
+    }
+    
+    // Clear the output buffer immediately
+    sentence[0] = '\0';
+    
+    // Sanity check for buffer_pos being valid
+    if (buffer_pos < 0 || buffer_pos >= GPS_BUFFER_SIZE) {
+        // Something went wrong, reset the buffer
+        buffer_pos = 0;
+        return 0;
+    }
+    
+    // Always ensure null termination
+    buffer[buffer_pos] = '\0';
+    
+    // Find start of sentence
+    int start_pos = -1;
+    for (int i = 0; i < buffer_pos; i++) {
+        if (buffer[i] == '$') {
+            start_pos = i;
+            break;
+        }
+    }
+    
+    if (start_pos == -1) {
+        // No NMEA sentence start found
+        buffer_pos = 0;  // Reset buffer
+        return 0;
+    }
+    
+    // Remove any data before the start marker
+    if (start_pos > 0) {
+        int bytes_to_move = buffer_pos - start_pos;
+        if (bytes_to_move > 0) {
+            for (int i = 0; i < bytes_to_move; i++) {
+                buffer[i] = buffer[start_pos + i];
+            }
+        }
+        buffer_pos = bytes_to_move;
+        buffer[buffer_pos] = '\0';
+    }
+    
+    // Look for end of sentence (just look for LF to simplify)
+    int end_pos = -1;
+    for (int i = 0; i < buffer_pos; i++) {
+        if (buffer[i] == '\n') {
+            end_pos = i;
+            break;
+        }
+    }
+    
+    if (end_pos == -1) {
+        // No end marker found yet
+        return 0;
+    }
+    
+    // Calculate sentence length (including the end marker)
+    int sentence_len = end_pos + 1;
+    
+    // Check if it fits in the destination
+    if (sentence_len >= max_len) {
+        // Remove this oversized sentence from the buffer
+        if (end_pos + 1 < buffer_pos) {
+            int bytes_to_move = buffer_pos - (end_pos + 1);
+            for (int i = 0; i < bytes_to_move; i++) {
+                buffer[i] = buffer[end_pos + 1 + i];
+            }
+            buffer_pos = bytes_to_move;
+        } else {
+            buffer_pos = 0;
+        }
+        buffer[buffer_pos] = '\0';
+        return 0;
+    }
+    
+    // Copy complete sentence to output
+    for (int i = 0; i < sentence_len; i++) {
+        sentence[i] = buffer[i];
+    }
+    sentence[sentence_len] = '\0';  // Ensure null termination
+    
+    // Remove processed data from buffer
+    if (end_pos + 1 < buffer_pos) {
+        int bytes_to_move = buffer_pos - (end_pos + 1);
+        for (int i = 0; i < bytes_to_move; i++) {
+            buffer[i] = buffer[end_pos + 1 + i];
+        }
+        buffer_pos = bytes_to_move;
+    } else {
+        buffer_pos = 0;
+    }
+    buffer[buffer_pos] = '\0';
+    
+    return 1;  // Successfully extracted sentence
 }
 
 void gps_init() {
@@ -324,6 +475,7 @@ void gps_init() {
     init_queue();
 }
 
+<<<<<<< HEAD
 GPSData* spin_gps() {
     int bytesRead = read_gps_data(buffer, GPS_BUFFER_SIZE);
     if (bytesRead > 0) {
@@ -340,6 +492,8 @@ void test_read() {
     }
 }
 
+=======
+>>>>>>> GPS_Driver
 void test_final_values(){
     printf("GPS Data Values:\n");
     printf("Position:\n");
@@ -357,6 +511,25 @@ void test_final_values(){
     printf("  Y: %f\n", gps_data.accel_y);
     printf("  Z: %f\n", gps_data.accel_z);
     printf("\n");
+}
+
+void spin_gps() {
+    char nmea_sentence[128];
+    
+    if (read_gps_data()) {
+        while (extract_nmea_sentence(nmea_sentence, sizeof(nmea_sentence))) {
+            // Process complete NMEA sentence
+            //printf("%s", nmea_sentence);
+            parse_nmea_sentence(&gps_data, nmea_sentence);
+        }
+    }
+}
+
+void test_read() {
+    int bytesRead = read_gps_data(buffer, GPS_BUFFER_SIZE);
+    if (bytesRead > 0) {
+        printf("%d bytes read\n%s\n", bytesRead, buffer);
+    }
 }
 
 void terminate_connection() {

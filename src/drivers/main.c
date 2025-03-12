@@ -103,6 +103,7 @@ int main() {
     if (fd == -1) {
         perror("shm_open");
         return 1;
+
     }
     
     printf("Successfully created shared memory: /dev/shm/simple_counter with fd=%d\n", fd);

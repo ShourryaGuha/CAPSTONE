@@ -36,7 +36,7 @@ void print_queue(void);
 // GPS operations
 void gps_init(void);
 int read_gps_data(char *buffer, size_t buffer_size);
-void parse_gps_data(GPSData *data, const char *str);
+void parse_nmea_sentence(GPSData* data, const char* sentence)
 void print_gps_data(const GPSData *data);
 GPSData* spin_gps(void);
 void test_read(void);

@@ -1,45 +1,36 @@
 import serial
 import time
+import struct
 
-def read_arduino_data(arduino_port='COM11', baud_rate=115200):
+def read_arduino_data(arduino_port='COM7', baud_rate=115200):
     """
     Reads data from the Arduino and returns the parsed values.
     :param arduino_port: Serial port of the Arduino (default is 'COM11')
     :param baud_rate: Baud rate for the serial communication (default is 115200)
     :return: A tuple containing (distance, servo1, servo2, confirmation)
     """
-    # Set up serial communication with Arduino
+    ser = serial.Serial(arduino_port, baud_rate, timeout=1)
+    data_format = "<HHHBB"  # Little-endian: 3 uint16 + 2 uint8
+    data_size = struct.calcsize(data_format)
+
     try:
-        ser = serial.Serial(arduino_port, baud_rate, timeout=1)
-        if not ser.is_open:
-            ser.open()
+        while True:
+            if ser.in_waiting >= data_size:
+                raw_data = ser.read(data_size)
+                unpacked_data = struct.unpack(data_format, raw_data)
 
-        time.sleep(0.1)
-
-        # Read a line from the serial port
-        line = ser.readline().decode('utf-8').strip()
-
-        # Read 5 values from string: distance, servo1, servo2, confirmation, connected
-        if line:
-            values = line.split(',')
-            if len(values) == 5:  # Ensure we received 5 values
-                distance = int(values[0])
-                servo1 = int(values[1])
-                servo2 = int(values[2])
-                confirmation = int(values[3])
-                connected = int(values[4])
+                distance, servo1, servo2, confirmation, connected = unpacked_data
+                print(
+                    f"Distance: {distance}, Servo1: {servo1}, Servo2: {servo2}, Confirmation: {confirmation}, Connected: {connected}")
+                
                 return distance, servo1, servo2, confirmation, connected
-            else:
-                print("Error: Received incorrect number of values.")
-                return None
-        else:
-            print("Error: No data available.")
-            return None
-    except serial.SerialException as e:
-        print(f"Error: {e}")
-        return None
+            
+    except KeyboardInterrupt:
+        print("Stopping serial read...")
+    finally:
+        ser.close()
 
-def send_arduino_release_command(value, arduino_port='COM11', baud_rate=115200):
+def send_arduino_release_command(value, arduino_port='COM7', baud_rate=115200):
     """
     Sends a value to the Arduino over serial communication.
     :param value: The value to send to the Arduino (int or byte)
@@ -60,4 +51,8 @@ def send_arduino_release_command(value, arduino_port='COM11', baud_rate=115200):
     except serial.SerialException as e:
         print(f"Error: {e}")
 
-    time.sleep(0.1)
+if __name__ == "__main__":
+    while True:
+        # Read data from Arduino
+        arduino_data = read_arduino_data()  # Call the function from arduino_reader.py
+

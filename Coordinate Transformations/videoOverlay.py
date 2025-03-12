@@ -21,8 +21,11 @@ if not cap.isOpened():
     print("Error: Could not open video stream.")
     exit()
 
+# Define colour indicators for confirmation status
+# Red: Not confirmed, Yellow: Pending, Green: Confirmed
 colourIndicators = [(0, 0, 255), (0, 255, 255), (0, 255, 0)]
 
+# initialize values for data received 
 distance, servo1, servo2, confirmation, connected = 0, 0, 0, 0, 1
 
 # Flag to check if release command has been sent
@@ -56,8 +59,6 @@ while True:
 
         # Show the modified video feed
         cv2.imshow("Drone Feed with Overlay", frame)
-
-        released = False
 
     else:
         # --- 
@@ -106,6 +107,7 @@ while True:
         print("Enter key pressed, sending release command to Arduino.")
         released = True
 
+    # Send release command to Arduino if flag is set
     if released:
         send_arduino_release_command(1)  # Send value 1 to Arduino
 

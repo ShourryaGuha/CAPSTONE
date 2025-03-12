@@ -9,7 +9,7 @@ int main() {
     gps_init();
     while(1) {
         spin_gps();
-        usleep(10000);
+        usleep(100000);
         test_final_values();
     }
     terminate_connection();

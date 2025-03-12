@@ -246,16 +246,6 @@ void parse_nmea_sentence(GPSData* data, const char* sentence) {
         data->accel_x = 0.0;
         data->accel_y = 0.0;
         data->accel_z = 0.0;
-        
-<<<<<<< HEAD
-        // Zero out position data as well since it's not reliable
-        data->latitude = 0.0;
-        data->longitude = 0.0;
-        data->height = 0.0;
-        
-        // fprintf(stderr, "Invalid GPS fix - RMC Valid: %d, Fix Quality: %d, Satellites: %d\n",
-                // rmc_valid, fix_quality, satellites);
-=======
         // Don't reset position data on every invalid sentence
         // Only reset it if fix quality is explicitly bad
         // if (fix_quality == 0) {
@@ -263,7 +253,6 @@ void parse_nmea_sentence(GPSData* data, const char* sentence) {
         //     data->longitude = 0.0;
         //     data->height = 0.0;
         // }
->>>>>>> GPS_Driver
     }
 }
 
@@ -475,25 +464,6 @@ void gps_init() {
     init_queue();
 }
 
-<<<<<<< HEAD
-GPSData* spin_gps() {
-    int bytesRead = read_gps_data(buffer, GPS_BUFFER_SIZE);
-    if (bytesRead > 0) {
-        parse_gps_data(&gps_data, buffer);
-        enqueue(&gps_data);
-    }
-    return &gps_data;
-}
-
-void test_read() {
-    int bytesRead = read_gps_data(buffer, GPS_BUFFER_SIZE);
-    if (bytesRead > 0) {
-        printf("%d bytes read\n%s\n", bytesRead, buffer);
-    }
-}
-
-=======
->>>>>>> GPS_Driver
 void test_final_values(){
     printf("GPS Data Values:\n");
     printf("Position:\n");
@@ -513,7 +483,7 @@ void test_final_values(){
     printf("\n");
 }
 
-void spin_gps() {
+GPSData* spin_gps() {
     char nmea_sentence[128];
     
     if (read_gps_data()) {
@@ -523,6 +493,7 @@ void spin_gps() {
             parse_nmea_sentence(&gps_data, nmea_sentence);
         }
     }
+    return &gps_data;
 }
 
 void test_read() {

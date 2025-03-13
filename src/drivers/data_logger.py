@@ -89,6 +89,11 @@ def main():
     pitch = 0   # about x-axis in the direction of left side of the assembled drone
     yaw = 0
 
+    # Initialize previous velocity values to store kf vx, vy and vz values to be used to find ax, ay and az
+    prev_vx, prev_vy, prev_vz = 0.0, 0.0, 0.0
+
+    final_state_vector = []
+
     # Complimentary filter
     alpha = 0.95  # greater the value more trust on the gyroscope     
     
@@ -166,7 +171,12 @@ def main():
                     Getting rotational acceleration by differentiating rotational velocities of gyro
                     '''
                     gyro_alpha_x, gyro_alpha_y, gyro_alpha_z = ekf.get_rotational_acceleration(sensor_data.imu_data.gx, sensor_data.imu_data.gy, sensor_data.imu_data.gz)
-                    
+
+                    '''
+                    Get yaw from tan inverse of gps velocity in y and x direction
+                    '''
+                    yaw = np.arctan2(sensor_data.gps_data.velocity_y, sensor_data.gps_data.velocity_x)
+
                     '''
                     Get and lof gyro roll and pitch standalon for visual debugging purposes
                     '''
@@ -187,9 +197,30 @@ def main():
                     
                     update_state, update_covariance = ekf.get_state()
 
+                    ## Update state single vector storing vx, vy, vz, phi (roll about y), theta (pitch about x)
                     roll = update_state[3]
                     pitch = update_state[4]
                     # print(f"Roll: {roll:.2f}, Pitch: {pitch:.2f}")
+
+                    # Calculate accelerations by differentiating velocities
+                    ax = (update_state[0] - prev_vx) / dt
+                    ay = (update_state[1] - prev_vy) / dt
+                    az = (update_state[2] - prev_vz) / dt
+
+                    # Update previous velocity values
+                    prev_vx = update_state[0]
+                    prev_vy = update_state[1]
+                    prev_vz = update_state[2]
+                    
+                    # final state vector order: vx, vy, vz, roll, pitch, yaw, ax, ay, ax, rotational_vel_x, rotational_vel_y, rotational_vel_z, rotational_accel_x, rotational_accel_y, rotational_accel_z
+                    '''
+                    vx, vy, vz, roll, pitch come from the KF
+                    ax, ay, az come from differentiating the vz, vy and vz values
+                    gyro_x_lf, gyro_y_lf, gyro_z_lf come from low pass filtering the gyro rotational rates
+                    gyro_alpha_x, gyro_alpha_y, gyro_alpha_z come from differentiating the gyro rotational rates
+                    '''
+                    final_state_vector = list(update_state)
+                    final_state_vector.extend([yaw, ax, ay, az, gyro_x_lf, gyro_y_lf, gyro_z_lf, gyro_alpha_x, gyro_alpha_y, gyro_alpha_z])
 
                     roll_degrees = np.degrees(roll)
                     pitch_degrees = np.degrees(pitch)
@@ -199,9 +230,6 @@ def main():
                     print(f"gyro roll degrees: {gyro_roll_degrees:.2f}, accel_roll_degrees: {np.degrees(accel_roll):.2f}, gyro pitch degrees: {gyro_pitch_degrees:.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
                     
                     # print(f"accel_roll_degrees: {np.degrees(accel_roll):.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
-                    
-                    # TODO implement yaw, simple tan inverse and extend the update state vector
-                    # TODO implement rotation matrix from drone to world frame and apply them to velocity and acceleration
                     
                     # Format all data as CSV row for sensor log
                     log_row = (

@@ -70,7 +70,7 @@ class EKF_Drone:
         self.dt = dt  # Time step
         
         # State vector [vx, vy, vz, phi (roll about y), theta (pitch about x)]
-        self.x = np.zeros((5, 1))  # Initial state (velocity, roll, pitch)
+        self.x = np.zeros((5, 1))  # Initial state (velocity xyz, roll, pitch)
 
         # State covariance matrix (initial uncertainty)
         self.P = np.diag([10, 10, 10, 0.01, 0.01])  # Larger uncertainty for roll and pitch

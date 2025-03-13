@@ -41,7 +41,8 @@ while True:
     # distance, servo1, servo2, confirmation, connected = 0, 0, 0, 0, 0
 
     # Read data from Arduino
-    arduino_data = read_arduino_data(ser=ser)  # Call the function from arduino_reader.py
+    if not released:
+        arduino_data = read_arduino_data(ser=ser)  # Call the function from arduino_reader.py
     
     if arduino_data:
         distance, servo1, servo2, confirmation, connected = arduino_data
@@ -119,7 +120,7 @@ while True:
 
     # Send release command to Arduino if flag is set
     if released:
-        send_arduino_release_command(1)  # Send value 1 to Arduino
+        ser.write(b'0x1')
 
 
 # Release resources

@@ -44,8 +44,7 @@ def send_arduino_release_command(value, arduino_port='COM7', baud_rate=9600):
             # time.sleep(2)  # Wait for the Arduino to reset after opening the port
             
             # Send the value as a single byte
-            ser.write(bytes([value]))
-            print(f"Sent value {value} to Arduino")
+            ser.write(b'1')
             
             # Wait a short moment for Arduino to process and respond
             # time.sleep(0.5)

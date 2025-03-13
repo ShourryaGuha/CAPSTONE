@@ -12,6 +12,7 @@
 #define DEFAULT_SLAVE_ADDR 0x00
 #define INIT_DELAY_US 2500000
 #define MAX_MEASUREMENTS 100
+#define MAX_DISTANCE 600
 
 // Measurement structure
 typedef struct {

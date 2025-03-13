@@ -49,6 +49,13 @@ class EKF_Drone:
         self.prev_gyro_pitch = 0
         self.prev_gyro_yaw = 0
 
+        '''
+        Old gps velocities to be remembered since we are getting a bunch of zeroes in between. If we read a zero, we just use old gps velocities
+        '''
+        self.prev_gps_velocity_x = 0
+        self.prev_gps_velocity_y = 0
+        self.prev_gps_velocity_z = 0
+
         """
         Extended Kalman Filter for velocity estimation using accelerometer and GPS.
 
@@ -108,8 +115,12 @@ class EKF_Drone:
         self.P = self.F @ self.P @ self.F.T + self.Q
 
     def update(self, gps_velocity_x, gps_velocity_y, gps_velocity_z, accel_roll, accel_pitch):
+        if gps_velocity_x != 0 or gps_velocity_y != 0 or gps_velocity_z != 0:
+            self.prev_gps_velocity_x = gps_velocity_x
+            self.prev_gps_velocity_y = gps_velocity_y
+            self.prev_gps_velocity_z = gps_velocity_z
         # Measurement vector (GPS velocity and accelerometer angles)
-        z = np.array([gps_velocity_x, gps_velocity_y, gps_velocity_z, accel_roll, accel_pitch]).reshape(5, 1)
+        z = np.array([self.prev_gps_velocity_x, self.prev_gps_velocity_y, self.prev_gps_velocity_z, accel_roll, accel_pitch]).reshape(5, 1)
 
         # Kalman Gain
         S = self.H @ self.P @ self.H.T + self.R

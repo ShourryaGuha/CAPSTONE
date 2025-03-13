@@ -97,13 +97,13 @@ while True:
         frame = cv2.resize(frame, (1010, 757))
 
         # Draw the projected point onto the frame
-        if 0 <= x < frame.shape[1] and 0 <= y < frame.shape[0]:  # Check if within bounds
-            if released:
-                cv2.circle(frame, (x, y), 8, (128, 128, 128), -1)
-                cv2.circle(frame, (x, y), 40, (128, 128, 128), 2)
-            else:
-                cv2.circle(frame, (x, y), 8, colourIndicators[confirmation], -1)
-                cv2.circle(frame, (x, y), 40, colourIndicators[confirmation], 2)
+        # if 0 <= x < frame.shape[1] and 0 <= y < frame.shape[0]:  # Check if within bounds
+            # if released:
+            #     cv2.circle(frame, (x, y), 8, (128, 128, 128), -1)
+            #     cv2.circle(frame, (x, y), 40, (128, 128, 128), 2)
+            # else:
+            #     cv2.circle(frame, (x, y), 8, colourIndicators[confirmation], -1)
+            #     cv2.circle(frame, (x, y), 40, colourIndicators[confirmation], 2)
 
         # Show the modified video feed
         cv2.imshow("Drone Feed with Overlay", frame)

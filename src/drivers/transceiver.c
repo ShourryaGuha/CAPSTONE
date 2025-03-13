@@ -12,10 +12,11 @@ typedef struct {
     uint16_t servo1;    // 2 bytes
     uint16_t servo2;    // 2 bytes
     uint8_t confirmation; // 1 byte
+    uint8_t connected; // 1 byte
 } rpi_data;
 
 // Global UART device variable
-#define UART_DEVICE "/dev/serial0"  // Default UART device (can be changed globally)
+#define UART_DEVICE "/dev/ttyAMA4"  // Default UART device (can be changed globally)
 
 // General UART initialization function
 int uart_init(speed_t baud_rate) {
@@ -47,21 +48,38 @@ int uart_init(speed_t baud_rate) {
 
 // Function to send data over UART
 void send_data(int fd, rpi_data *data) {
-    uint8_t buffer[7];
-    
-    // Pack the data into the buffer
-    buffer[0] = (uint8_t)(data->distance >> 8);  // High byte of distance
-    buffer[1] = (uint8_t)(data->distance & 0xFF); // Low byte of distance
-    buffer[2] = (uint8_t)(data->servo1 >> 8);    // High byte of servo1
-    buffer[3] = (uint8_t)(data->servo1 & 0xFF);  // Low byte of servo1
-    buffer[4] = (uint8_t)(data->servo2 >> 8);    // High byte of servo2
-    buffer[5] = (uint8_t)(data->servo2 & 0xFF);  // Low byte of servo2
-    buffer[6] = data->confirmation;              // Confirmation integer (1-3)
+    char temp[32] = {0};   // Temporary buffer for the formatted string
+    // Format the struct values into a comma separated string (without newline)
+    // Using %hu for 16-bit unsigned and %hhu for 8-bit unsigned values.
+    snprintf(temp, sizeof(temp), "%hu,%hu,%hu,%hhu,%hhu", 
+             data->distance, data->servo1, data->servo2, 
+             data->confirmation, data->connected);
 
-    // Send the data
+    int len = strlen(temp);
+    // Create the final 32-byte buffer
+    char buffer[32];
+
+    // Fill the buffer with spaces using a for loop
+    for (int i = 0; i < sizeof(buffer); i++) {
+        buffer[i] = ' ';
+    }
+    
+    // Copy the formatted string into the beginning of the buffer
+    memcpy(buffer, temp, len);
+    // Optionally, set the last byte to a newline as a packet delimiter
+    buffer[31] = '\n';
+
+    // Send the full 32 bytes over UART
     write(fd, buffer, sizeof(buffer));
-    printf("Data Sent: Distance: %d, Servo1: %d, Servo2: %d, Confirmation: %d\n", 
-            data->distance, data->servo1, data->servo2, data->confirmation);
+
+    // Debug: Print the sent packet in hexadecimal for clarity
+    printf("Sent data (32 bytes): ");
+    for (int i = 0; i < sizeof(buffer); i++) {
+        printf("%02X ", (unsigned char)buffer[i]);
+    }
+    printf("\n");
+
+    usleep(10);
 }
 
 // int main() {

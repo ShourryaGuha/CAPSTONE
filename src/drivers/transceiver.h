@@ -10,9 +10,10 @@ typedef struct {
     uint16_t servo1;    // 2 bytes
     uint16_t servo2;    // 2 bytes
     uint8_t confirmation; // 1 byte
+    uint8_t connected; // 1 byte
 } rpi_data;
 
-#define UART_DEVICE "/dev/serial0"  // Default UART device (can be changed globally)
+#define UART_DEVICE "/dev/ttyAMA4"  // Default UART device (can be changed globally)
 
 // General UART initialization function prototype
 int uart_init(speed_t baud_rate);

@@ -19,6 +19,7 @@
 import serial
 import time
 import struct  # Used for packing integers into bytes
+import subprocess
 
 # Open the serial port
 ser = serial.Serial('/dev/ttyACM1', 9600, timeout=0.1)
@@ -41,11 +42,21 @@ while True:
 
     # Read **1 byte** response as an unsigned 8-bit integer
     response = ser.read(1)  # Read 1 byte
-    print(response)
+    # print(response)
 
     if response:
         received_value = struct.unpack('B', response)[0]  # 'B' = Unsigned 8-bit int
         print(f"Received 8-bit Integer: 0x{received_value:02X}")  # Format as hex
+
+        if received_value == 0x01:  # Assuming 0x01 triggers the solenoid release
+            try:
+                # Run the solenoid control executable (./main) from the build directory
+                subprocess.run(["build/main"], check=True)  # Use relative path to main
+                print("Solenoid released.")
+            except subprocess.CalledProcessError as e:
+                print(f"Error executing solenoid control: {e}")
+            while 1:
+                print("Mission completed\n")
 
     # Sleep to avoid flooding the port
     # print("sent\n")

@@ -200,6 +200,8 @@ def main():
                     
                     # print(f"accel_roll_degrees: {np.degrees(accel_roll):.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
                     
+                    # TODO implement yaw, simple tan inverse and extend the update state vector
+                    # TODO implement rotation matrix from drone to world frame and apply them to velocity and acceleration
                     
                     # Format all data as CSV row for sensor log
                     log_row = (

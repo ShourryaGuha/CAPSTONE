@@ -2,14 +2,13 @@ import serial
 import time
 import struct
 
-def read_arduino_data(arduino_port='COM7', baud_rate=9600):
+def read_arduino_data(ser):
     """
     Reads data from the Arduino and returns the parsed values.
     :param arduino_port: Serial port of the Arduino (default is 'COM7')
     :param baud_rate: Baud rate for the serial communication (default is 115200)
     :return: A tuple containing (distance, servo1, servo2, confirmation, connected)
     """
-    ser = serial.Serial(arduino_port, baud_rate, timeout=0.05)
     data_format = ">3H2B"  # Big-endian: 3 signed 16-bit ints + 2 unsigned 8-bit ints
     data_size = struct.calcsize(data_format)
 
@@ -31,8 +30,6 @@ def read_arduino_data(arduino_port='COM7', baud_rate=9600):
             
     except KeyboardInterrupt:
         print("Stopping serial read...")
-    finally:
-        ser.close()
 
 def send_arduino_release_command(value, arduino_port='COM7', baud_rate=9600):
     """

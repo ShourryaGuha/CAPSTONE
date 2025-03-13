@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import serial
 from cameraTransform import project_3d_to_2d
 from arduinoInterface import read_arduino_data, send_arduino_release_command
 
@@ -31,6 +32,8 @@ distance, servo1, servo2, confirmation, connected = 0, 0, 0, 0, 1
 # Flag to check if release command has been sent
 released = False
 
+ser = serial.Serial('COM7', baudrate=9600, timeout=0.05)
+
 while True:
 
     point_3d += 0.1
@@ -38,7 +41,7 @@ while True:
     # distance, servo1, servo2, confirmation, connected = 0, 0, 0, 0, 0
 
     # Read data from Arduino
-    arduino_data = read_arduino_data()  # Call the function from arduino_reader.py
+    arduino_data = read_arduino_data(ser=ser)  # Call the function from arduino_reader.py
     
     if arduino_data:
         distance, servo1, servo2, confirmation, connected = arduino_data
@@ -118,6 +121,8 @@ while True:
     if released:
         send_arduino_release_command(1)  # Send value 1 to Arduino
 
+
 # Release resources
+ser.close()
 cap.release()
 cv2.destroyAllWindows()

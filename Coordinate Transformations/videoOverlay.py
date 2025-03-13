@@ -32,6 +32,11 @@ distance, servo1, servo2, confirmation, connected = 0, 0, 0, 0, 1
 released = False
 
 while True:
+
+    point_3d += 0.1
+    # initialize values for data received 
+    # distance, servo1, servo2, confirmation, connected = 0, 0, 0, 0, 0
+
     # Read data from Arduino
     arduino_data = read_arduino_data()  # Call the function from arduino_reader.py
     
@@ -40,6 +45,8 @@ while True:
         print(f"Distance: {distance}, Servo1: {servo1}, Servo2: {servo2}, Confirmation: {confirmation}")
     else:
         print("No data received from Arduino.")
+
+    #distance, servo1, servo2, confirmation, connected = 0, 0, 0, 0, 0
 
     print(distance, servo1, servo2, confirmation, connected)
 

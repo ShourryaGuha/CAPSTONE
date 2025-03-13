@@ -196,9 +196,9 @@ def main():
 
                     # print(f"vx: {update_state[0]:.2f}, vy: {update_state[1]:.2f}, vz: {update_state[2]:.2f} Roll: {roll_degrees:.2f} degrees, Pitch: {pitch_degrees:.2f} degrees")
                     
-                    # print(f"gyro roll degrees: {gyro_roll_degrees:.2f}, accel_roll_degrees: {np.degrees(accel_roll):.2f}, gyro pitch degrees: {gyro_pitch_degrees:.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
+                    print(f"gyro roll degrees: {gyro_roll_degrees:.2f}, accel_roll_degrees: {np.degrees(accel_roll):.2f}, gyro pitch degrees: {gyro_pitch_degrees:.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
                     
-                    print(f"accel_roll_degrees: {np.degrees(accel_roll):.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
+                    # print(f"accel_roll_degrees: {np.degrees(accel_roll):.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
                     
                     
                     # Format all data as CSV row for sensor log

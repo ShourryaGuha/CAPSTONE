@@ -4,7 +4,10 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
 # Load data from CSV file
-data = pd.read_csv("/home/shourryag/Documents/Shourrya_Capstone/CAPSTONE/Car_Ride_10th/sensor_log40ish.csv")
+# data = pd.read_csv("/home/shourryag/Documents/Shourrya_Capstone/CAPSTONE/Running_12th/sensor_log_W.csv")
+
+# windows
+data = pd.read_csv("c:/Users/guhas/src/CAPSTONE/Running_12th/sensor_log_W.csv")
 time = pd.to_datetime(data['timestamp'])  # Convert timestamp to datetime for better handling
 imu_ax = data['imu_ax']
 imu_ay = data['imu_ay']
@@ -96,6 +99,10 @@ class EKF_Drone:
 
         # Predict state (velocity and angles)
         self.x = self.F @ self.x + self.B @ u
+
+        # Normalize angles after update
+        self.x[3, 0] = (self.x[3, 0] + np.pi) % (2 * np.pi) - np.pi  # Roll
+        self.x[4, 0] = (self.x[4, 0] + np.pi) % (2 * np.pi) - np.pi  # Pitch
 
         # Predict covariance
         self.P = self.F @ self.P @ self.F.T + self.Q
@@ -193,20 +200,20 @@ dt = 0.025  # Time step (100ms)
 process_noise = 0.1  # Process noise variance (acceleration noise)
 measurement_noise = 1.0  # Measurement noise variance (GPS velocity noise)
 
-# ekf = EKF_Drone(dt, process_noise, measurement_noise)
+ekf = EKF_Drone(dt)
 
-# # Loop over the data (for each time step)
-# predicted_states = []
+# Loop over the data (for each time step)
+predicted_states = []
 
-# roll = 0  # about y-axis in the direction of nose of the drone
-# pitch = 0   # about x-axis in the direction of left side of the assembled drone
+roll = 0  # about y-axis in the direction of nose of the drone
+pitch = 0   # about x-axis in the direction of left side of the assembled drone
 
-# # Lists to store roll, pitch, and time values
-# roll_values = []
-# pitch_values = []
-# # time_values = []
+# Lists to store roll, pitch, and time values
+roll_values = []
+pitch_values = []
+# time_values = []
 
-# for i in range(len(imu_ax_filtered)):
+for i in range(len(imu_ax_filtered)):
 
     # assuming correct coordinate transfomr from IMU to world frame from chatgpt
 
@@ -227,22 +234,41 @@ measurement_noise = 1.0  # Measurement noise variance (GPS velocity noise)
 #     accel_linear_y = accel_linear[1]
 #     accel_linear_z = accel_linear[2]
 
-#     ekf.predict(accel_linear_x, accel_linear_y, accel_linear_z)
+    ekf.predict(imu_ax_filtered[i], imu_ay_filtered[i], imu_az_filtered[i], imu_gyro_x[i], imu_gyro_y[i], imu_gyro_z[i])
 
-#     ekf.update(velocity_x[i], velocity_y[i], velocity_z[i])
+    # update step
+    accel_roll = np.arctan2(imu_ax_filtered[i], np.sqrt(imu_ay_filtered[i]**2 + imu_az_filtered[i]**2))
+    accel_pitch = np.arctan2(-imu_ay_filtered[i], np.sqrt(imu_ax_filtered[i]**2 + imu_az_filtered[i]**2))
 
-#     predicted_state = ekf.get_state()
-#     predicted_states.append(predicted_state)
+    ekf.update(velocity_x[i], velocity_y[i], velocity_z[i], accel_roll, accel_pitch)
+
+    update_state, covariance = ekf.get_state()
+    # convert to degrees
+    update_state[3] = np.degrees(update_state[3])
+    update_state[4] = np.degrees(update_state[4])
+
+    predicted_states.append(update_state)
 
 
-# # Plot roll and pitch vs time
-# plt.figure(figsize=(10, 6))
-# plt.plot(time, roll_values, label='Roll (degrees)')
-# plt.plot(time, pitch_values, label='Pitch (degrees)')
-# plt.xlabel('Time')
-# plt.ylabel('Angle (degrees)')
-# plt.title('Roll and Pitch vs Time')
-# plt.legend()
-# plt.grid(True)
-# plt.show()
+predicted_states = np.array(predicted_states)
+
+roll = predicted_states[:, 3]
+pitch = predicted_states[:, 4]
+
+# Limit the data to the first 100 points
+limit = 100
+time_limited = time[:limit]
+roll_limited = roll[:limit]
+pitch_limited = pitch[:limit]
+
+# Plot roll and pitch vs time
+plt.figure(figsize=(10, 6))
+plt.plot(time_limited, roll_limited, label='Roll (degrees)')
+plt.plot(time_limited, pitch_limited, label='Pitch (degrees)')
+plt.xlabel('Time')
+plt.ylabel('Angle (degrees)')
+plt.title('Roll and Pitch vs Time')
+plt.legend()
+plt.grid(True)
+plt.show()
 

@@ -20,8 +20,6 @@ def read_arduino_data(arduino_port='COM7', baud_rate=115200):
                 unpacked_data = struct.unpack(data_format, raw_data)
 
                 distance, servo1, servo2, confirmation, connected = unpacked_data
-                print(
-                    f"Distance: {distance}, Servo1: {servo1}, Servo2: {servo2}, Confirmation: {confirmation}, Connected: {connected}")
                 
                 return distance, servo1, servo2, confirmation, connected
             
@@ -38,21 +36,27 @@ def send_arduino_release_command(value, arduino_port='COM7', baud_rate=115200):
     :param baud_rate: Baud rate for the serial communication (default is 115200)
     """
     try:
-        # Set up serial communication with Arduino
-        ser = serial.Serial(arduino_port, baud_rate)
-        if not ser.is_open:
-            ser.open()
-
-        # Send the value to the Arduino as a single byte
-        ser.write(bytes([value]))  # Send value as a byte
-        print(f"Sent value {value} to Arduino")
-
-        ser.close()  # Close the serial connection after sending
+        # Open the serial port using a context manager (ensures the port closes automatically)
+        with serial.Serial(arduino_port, baud_rate, timeout=1) as ser:
+            # time.sleep(2)  # Wait for the Arduino to reset after opening the port
+            
+            # Send the value as a single byte
+            ser.write(bytes([value]))
+            print(f"Sent value {value} to Arduino")
+            
+            # Wait a short moment for Arduino to process and respond
+            # time.sleep(0.5)
+            
+            # Read and print any available response from the Arduino
+            # while ser.in_waiting:
+            #     response = ser.readline().decode().strip()
+            #     print("Arduino says:", response)
+                
     except serial.SerialException as e:
         print(f"Error: {e}")
 
 if __name__ == "__main__":
     while True:
         # Read data from Arduino
-        arduino_data = read_arduino_data()  # Call the function from arduino_reader.py
+        arduino_data = send_arduino_release_command(1)  # Call the function from arduino_reader.py
 

@@ -14,8 +14,14 @@ objp = objp * square_size
 objpoints = []  # 3D points in real-world space.
 imgpoints = []  # 2D points in image plane.
 
-images = glob.glob('calibrationImages/*.jpg')
+# print("Current working directory:", os.getcwd())
 
+# folder = 'Coordinate Tranformations/calibrationImages'
+# files = os.listdir(folder)
+# print(f"Files in {folder}: {files}")
+
+
+images = glob.glob('Coordinate Transformations/calibration/calibrationImages/*.jpg')
 # loop over the images and find the chessboard corners.
 for fname in images:
     img = cv2.imread(fname)

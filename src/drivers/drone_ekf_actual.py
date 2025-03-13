@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
 # Load data from CSV file
-# data = pd.read_csv("/home/shourryag/Documents/Shourrya_Capstone/CAPSTONE/Running_12th/sensor_log_W.csv")
+data = pd.read_csv("/home/shourryag/Documents/Shourrya_Capstone/CAPSTONE/Running_12th/sensor_log_W.csv")
 
 # windows
-data = pd.read_csv("c:/Users/guhas/src/CAPSTONE/Running_12th/sensor_log_W.csv")
+# data = pd.read_csv("c:/Users/guhas/src/CAPSTONE/Running_12th/sensor_log_W.csv")
+
 time = pd.to_datetime(data['timestamp'])  # Convert timestamp to datetime for better handling
 imu_ax = data['imu_ax']
 imu_ay = data['imu_ay']

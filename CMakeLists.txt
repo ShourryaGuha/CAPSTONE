@@ -8,20 +8,16 @@ project(CAPSTONE VERSION 1.0)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
-add_executable(main src/drivers/main.c)
-
 # Add subdirectories to build
 add_subdirectory(src/drivers)
-# add_subdirectory(src/kalman_filter)
-# add_subdirectory(src/kinematics)
 
-# Link the drivers library to the main executable
-target_link_libraries(main PRIVATE drivers)
+# Create main executable
+add_executable(main src/drivers/main.c)
+target_link_libraries(main PRIVATE drivers m)
+
+# Create gimbal_control executable
+add_executable(gimbal_control src/drivers/gimbal_control.c)
+target_link_libraries(gimbal_control PRIVATE drivers m pigpio pthread rt)
 
 # Include directories for the project
-target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR}/src/drivers)
-target_link_libraries(main 
-    PRIVATE 
-        drivers 
-        m
-)
+target_include_directories(gimbal_control PRIVATE ${CMAKE_SOURCE_DIR}/src/drivers)

@@ -51,6 +51,10 @@ typedef struct {
     pthread_mutex_t mutex;
 } SharedMemory;
 
+float generate_random(float min, float max) {
+    return min + (rand() / (float)RAND_MAX) * (max - min);
+}
+
 SharedMemory *shared_mem;
 
 float map_angle_to_servo(float angle, float min_angle, float max_angle, float min_servo, float max_servo, float mid_angle, float mid_servo) {
@@ -84,6 +88,11 @@ int check_for_drop_command() {
 }
 
 int main() {
+    #ifndef USE_SHARED_MEMORY
+    srand(time(NULL));
+    time_t last_update = time(NULL);
+    #endif
+
     if (gpioInitialise() < 0) return -1;
 
     servo_t servo_pitch, servo_yaw;
@@ -114,9 +123,9 @@ int main() {
         target_distance = shared_mem->distance;
         pthread_mutex_unlock(&shared_mem->mutex);
         #else
-        target_pitch = -40;
-        target_yaw = 0;
-        target_distance = 0.3;
+        target_pitch = 0;
+        target_yaw = 20;
+        target_distance = 4;
         #endif
 
         float servo_pitch_angle = map_angle_to_servo(target_pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE, PITCH_SERVO_MIN, PITCH_SERVO_MAX, PITCH_MID_ANGLE, PITCH_MID_SERVO);
@@ -149,6 +158,13 @@ int main() {
                 target_yaw = new_target_yaw;
                 break;
             }
+            #else
+                // if(time(NULL) - last_update >= 10){
+                //     target_pitch = generate_random(ABS_PITCH_MAX, ABS_PITCH_MAX);
+                //     target_yaw = generate_random(ABS_YAW_MIN, ABS_YAW_MAX);
+                //     target_distance = generate_random(3, 70);
+                //     last_update = time(NULL);
+                // }
             #endif
 
             if (check_for_drop_command()) {

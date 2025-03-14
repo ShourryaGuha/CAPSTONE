@@ -13,6 +13,7 @@
 #include "barometer.h"
 #include "imu.h"
 #include "laserTOF.h"
+<<<<<<< HEAD
 
 
 // #define DEBUG
@@ -84,6 +85,10 @@ void print_sensor_suite(const SensorSuite* s) {
 }
 #endif
 
+=======
+#include "solenoid_control.h"
+#include "transceiver.h"
+>>>>>>> planB
 
 int main() {
     // clock_t start = clock();
@@ -98,6 +103,7 @@ int main() {
     // For nanosleep
     struct timespec ts;
     
+<<<<<<< HEAD
     // Initialize shared memory for the counter
     int fd = shm_open("simple_counter", O_CREAT | O_RDWR, 0666);
     if (fd == -1) {
@@ -199,3 +205,19 @@ int main() {
     printf("C program: Cleanup complete\n");
     return 0;
 }
+=======
+    // Initialize the solenoid
+    initializeSolenoid();
+    // Release the solenoid for 3 seconds
+
+    printf("Releasing solenoid...\n");
+    releaseSolenoid();
+    sleep(3);  // Wait for 3 seconds
+   
+    // Re-engage the solenoid
+    printf("Engaging solenoid...\n");
+    engageSolenoid();
+    sleep(3);
+    
+}
+>>>>>>> planB

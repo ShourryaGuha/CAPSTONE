@@ -22,7 +22,7 @@ import struct  # Used for packing integers into bytes
 import subprocess
 
 # Open the serial port
-ser = serial.Serial('/dev/ttyACM1', 9600, timeout=0.1)
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout=0.1)
 
 while True:
     # Define four 2-byte (16-bit) integers

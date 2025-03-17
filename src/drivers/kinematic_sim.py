@@ -38,7 +38,13 @@ def payload_lin_a_v(a_imu_G, v_imu_G, omega_drone, alpha_drone, r_drone, yaw, pi
 
 
 ### ✅ Freefall Simulation
-def simulate_freefall(h0, v0, a0, m, g, v_table, Fd_table, dt=0.01):
+def simulate_freefall(h0, v0, a0, m, dt=0.01):
+
+    v_table = (1000/3600)*np.array([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100])
+    Fd_table = np.array([0.000734, 0.00274, 0.006, 0.0103, 0.0160, 0.022, 0.031, 0.04, 0.05, 0.0621, 0.075, 0.083, 0.098, 0.114, 0.132, 0.151, 0.171, 0.192, 0.213, 0.237])
+
+    g = 9.81
+
     r = np.array([0.0, 0.0, h0])
     v = np.array(v0)
     a = np.array(a0)

@@ -20,15 +20,20 @@ import serial
 import time
 import struct  # Used for packing integers into bytes
 import subprocess
+from multiprocessing import shared_memory, Process, Value, Array
+
+angles_shared_array = Array('d', 3)
 
 # Open the serial port
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout=0.1)
 
 while True:
     # Define four 2-byte (16-bit) integers
-    int1 = 50    # Example value
-    int2 = 90
-    int3 = 100
+    int1 = int(angles_shared_array[0])  # Convert to int if needed
+    int2 = int(angles_shared_array[1])
+    int3 = int(angles_shared_array[2])
+
+    # print("theta_yaw:", int1, "theta_pitch:", int2, "dist:", int3)
     
     # Define two 1-byte (8-bit) values
     byte1 = 1     # Example 8-bit value (0-255)

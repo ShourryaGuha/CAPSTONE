@@ -6,10 +6,14 @@ import multiprocessing
 import subprocess
 import signal
 import time
+# from multiprocessing import Process
+# import data_logger
+# import transmit
 
 # # Configure paths - adjust these to match your actual executable paths
 C_PROGRAM_PATH = "build/main"
 PYTHON_LOGGER_PATH = "src/drivers/data_logger.py"
+
 
 # C_PROGRAM_PATH = "../../build/main"
 # PYTHON_LOGGER_PATH = "data_logger.py"
@@ -129,3 +133,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # # Start data_logger.py process
+    # data_logger_process = Process(target=data_logger.main)
+    # data_logger_process.start()
+    
+    # # Start transmit.py process
+    # transmit_process = Process(target=transmit.main)
+    # transmit_process.start()
+    
+    # # Wait for both processes to complete
+    # data_logger_process.join()
+    # transmit_process.join()

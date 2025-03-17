@@ -25,9 +25,7 @@ def check_freefall_simulation():
     v0 = [8.3, 2.0, 1.0]  # Moving forward and slightly upward  
     a0 = [0.0, 0.0, -9.81]  # Gravity pulls it down  
     m, g = 0.1, 9.81
-    v_table = (1000/3600)*np.array([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100])
-    Fd_table = np.array([0.000734, 0.00274, 0.006, 0.0103, 0.0160, 0.022, 0.031, 0.04, 0.05, 0.0621, 0.075, 0.083, 0.098, 0.114, 0.132, 0.151, 0.171, 0.192, 0.213, 0.237])
-    final_position = simulate_freefall(h0, v0, a0, m, g, v_table, Fd_table)
+    final_position = simulate_freefall(h0, v0, a0, m, g)
     print("Final Payload Impact Position:", final_position)
     if final_position[2] > 0:
         print("ERROR: Payload should have hit the ground (z=0)!")
@@ -37,7 +35,7 @@ def check_gimbal_inverse_kinematics():
     """Sanity check for gimbal angle calculations."""
     target_pos = (20.2294892, 4.76572681, -0.05411896)
     solution = inverse_kinematics_jacobian(*target_pos)
-    x_fk, y_fk, z_fk = forward_kinematics(solution['theta1'], solution['theta2'], solution['d'])
+    x_fk, y_fk, z_fk = forward_kinematics(solution[0], solution[1], solution[2])
     error = np.linalg.norm(np.array(target_pos) - np.array([x_fk, y_fk, z_fk]))
     print("Gimbal IK Error:", error)
     if error > 0.01:

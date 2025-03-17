@@ -11,6 +11,8 @@ from ctypes import Structure, c_int, c_float, c_double, Array, POINTER
 from drone_ekf_actual import EKF_Drone
 from low_pass_filter_ema import LowPassFilterEMA
 import numpy as np
+import kinematic_sim as kin
+from multiprocessing import shared_memory, Process, Value, Array
 
 # Flag for graceful shutdown
 running = True
@@ -97,6 +99,8 @@ def main():
     # Complimentary filter
     alpha = 0.95  # greater the value more trust on the gyroscope     
     
+    angles_shared_array = Array('d', 3)
+
     # Wait for the shared memory file to exist
     while retries < max_retries and running:
         if os.path.exists(shm_path):
@@ -123,6 +127,13 @@ def main():
         log_filename = f"sensor_log.csv"
         ekf_log_filename = f"ekf_state_log.csv"
         
+        shared_mem.seek(0)
+        sensor_data_bytes = shared_mem.read(ctypes.sizeof(SensorSuite))
+                
+        # Create a SensorSuite instance from the bytes
+        sensor_data = SensorSuite.from_buffer_copy(sensor_data_bytes)
+        init_height = sensor_data.baro_data.altitude
+
         with open(log_filename, 'w') as logfile, open(ekf_log_filename, 'w') as ekf_logfile:
             # Write CSV header with correctly named fields
             logfile.write("timestamp,delta_t,")
@@ -224,6 +235,30 @@ def main():
 
                     roll_degrees = np.degrees(roll)
                     pitch_degrees = np.degrees(pitch)
+
+                    updated_height = sensor_data.baro_data.altitude-init_height
+
+                    a_payload_G, v_payload_G = kin.payload_lin_a_v(v_imu_G = [final_state_vector[0], final_state_vector[1], final_state_vector[2]],
+                                        roll = final_state_vector[3],
+                                        pitch = final_state_vector[4],
+                                        yaw = final_state_vector[5],
+                                        a_imu_G = [final_state_vector[6], final_state_vector[7], final_state_vector[8]],
+                                        omega_drone = [final_state_vector[9], final_state_vector[10], final_state_vector[11]],
+                                        alpha_drone = [final_state_vector[12], final_state_vector[13], final_state_vector[14]],
+                                        r_drone = (1/1000)*np.array([15.45, -162.19, 28.41]))
+
+                    final_position = kin.simulate_freefall(h0 = updated_height, 
+                                          a0 = [a_payload_G[0], a_payload_G[1], a_payload_G[2]], 
+                                          v0 = [v_payload_G[0], v_payload_G[1], v_payload_G[2]],
+                                          m = 0.1)
+                    
+                    angles_dist = kin.inverse_kinematics_jacobian(*final_position)
+
+                    print("yaw: ", angles_dist[0], " pitch: ", angles_dist[1], " dist: ", angles_dist[2], "\n")
+
+                    for i in range(len(angles_dist)):
+                        if i < 3:  # Ensure we don't exceed array bounds
+                            angles_shared_array[i] = angles_dist[i]
 
                     # print(f"Final state vector: {final_state_vector}")
 

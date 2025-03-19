@@ -1,68 +1,81 @@
-# import serial
-# import time
-
-# # Open the serial port
-# ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
-
-# while True:
-#     # Write "helloworld" to the serial port
-#     ser.write(b'helloworld\n')  # Send as bytes
-
-#     # Optional: Read response if needed
-#     response = ser.readline().decode('utf-8', errors='ignore').strip()
-#     if response:
-#         print("Received:", response)
-
-#     # Sleep to avoid flooding the port
-#     time.sleep(1)
-
 import serial
 import time
-import struct  # Used for packing integers into bytes
+import struct
 import subprocess
-from multiprocessing import shared_memory, Process, Value, Array
+import os
+import mmap
 
-angles_shared_array = Array('d', 3)
-
-# Open the serial port
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout=0.1)
-
-while True:
-    # Define four 2-byte (16-bit) integers
-    int1 = int(angles_shared_array[0])  # Convert to int if needed
-    int2 = int(angles_shared_array[1])
-    int3 = int(angles_shared_array[2])
-
-    # print("theta_yaw:", int1, "theta_pitch:", int2, "dist:", int3)
+try:
+    # Open the shared memory file
+    angles_file_path = "/dev/shm/angles_data_file"
     
-    # Define two 1-byte (8-bit) values
-    byte1 = 1     # Example 8-bit value (0-255)
-    byte2 = 1    # Example 8-bit value (0-255)
+    if not os.path.exists(angles_file_path):
+        print(f"Transmitter: Shared memory file not found at {angles_file_path}")
+        print("Available shared memory segments:")
+        os.system("ls -la /dev/shm/")
+        exit(1)
+    
+    # Open the file for memory mapping
+    angles_fd = os.open(angles_file_path, os.O_RDWR)
+    angles_mmap = mmap.mmap(angles_fd, 3 * 8, mmap.MAP_SHARED, mmap.PROT_READ)
+    
+    print(f"Transmitter: Connected to shared memory at {angles_file_path}")
+    
+    # Open the serial port
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout=0.1)
+    print(f"Transmitter: Connected to serial port /dev/ttyACM0")
+    
+    while True:
+        # Read the data from the shared memory
+        angles_mmap.seek(0)
+        data_bytes = angles_mmap.read(3 * 8)
+        
+        # Unpack as 3 doubles
+        x, y, z = struct.unpack('ddd', data_bytes)
+        
+        # Convert to integers for transmission
+        int1 = int(x)
+        int2 = int(y)
+        int3 = int(z)
+        
+        # Optional debugging output
+        print(f"Transmitting - x: {int1}, y: {int2}, z: {int3}")
+        
+        # Define two 1-byte (8-bit) values
+        byte1 = 1
+        byte2 = 1
+        
+        # Pack them as 3 16-bit integers and 2 8-bit integers
+        data = struct.pack('>3H2B', int1, int2, int3, byte1, byte2)
+        
+        # Send the packed data
+        ser.write(data)
+        
+        # Read response
+        response = ser.read(1)  # Read 1 byte
+        
+        if response:
+            received_value = struct.unpack('B', response)[0]
+            print(f"Received 8-bit Integer: 0x{received_value:02X}")
+            
+            if received_value == 0x01:
+                try:
+                    subprocess.run(["build/main"], check=True)
+                    print("Solenoid released.")
+                except subprocess.CalledProcessError as e:
+                    print(f"Error executing solenoid control: {e}")
+                print("Mission completed")
+                break
+        
+        time.sleep(0.05)
 
-    # Pack them as 3 little-endian 16-bit integers and 2 little-endian 8-bit integers
-    data = struct.pack('>3H2B', int1, int2, int3, byte1, byte2)
+except Exception as e:
+    print(f"Transmitter error: {e}")
 
-    # Send the packed data
-    ser.write(data)
-
-    # Read **1 byte** response as an unsigned 8-bit integer
-    response = ser.read(1)  # Read 1 byte
-    # print(response)
-
-    if response:
-        received_value = struct.unpack('B', response)[0]  # 'B' = Unsigned 8-bit int
-        print(f"Received 8-bit Integer: 0x{received_value:02X}")  # Format as hex
-
-        if received_value == 0x01:  # Assuming 0x01 triggers the solenoid release
-            try:
-                # Run the solenoid control executable (./main) from the build directory
-                subprocess.run(["build/main"], check=True)  # Use relative path to main
-                print("Solenoid released.")
-            except subprocess.CalledProcessError as e:
-                print(f"Error executing solenoid control: {e}")
-            while 1:
-                print("Mission completed\n")
-
-    # Sleep to avoid flooding the port
-    # print("sent\n")
-    # time.sleep(0.05)
+finally:
+    if 'angles_mmap' in locals():
+        angles_mmap.close()
+    if 'angles_fd' in locals():
+        os.close(angles_fd)
+    if 'ser' in locals():
+        ser.close()

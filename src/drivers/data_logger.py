@@ -12,7 +12,7 @@ from drone_ekf_actual import EKF_Drone
 from low_pass_filter_ema import LowPassFilterEMA
 import numpy as np
 import kinematic_sim as kin
-from multiprocessing import shared_memory, Process, Value, Array
+from multiprocessing import shared_memory, Process, Value, Array, resource_tracker
 
 # Flag for graceful shutdown
 running = True
@@ -76,6 +76,7 @@ def main():
     
     # This is the path where POSIX shared memory objects appear in Linux
     shm_path = "/dev/shm/simple_counter"
+    angles_file_path = "/dev/shm/angles_data_file"
 
     # Example usage:
     dt = 0.0225  # Time step based on logged delta_t values dt = sensor_data.delta_t - last_delta_t
@@ -95,23 +96,58 @@ def main():
     prev_vx, prev_vy, prev_vz = 0.0, 0.0, 0.0
 
     final_state_vector = []
-
+    
     # Complimentary filter
     alpha = 0.95  # greater the value more trust on the gyroscope     
     
-    angles_shared_array = Array('d', 3)
+    # Create a named shared memory segment for angles data to be used by transmit.py
+    # This replaces the previous Array approach which only works within the same process hierarchy
+    try:
+        angles_file_path = "/dev/shm/angles_data_file"
+        
+        # Create the file if it doesn't exist and initialize it with zeros
+        with open(angles_file_path, "wb") as f:
+            # Initialize with zeros - 3 doubles (x, y, z) = 24 bytes
+            f.write(b'\x00' * (3 * 8))
+
+        retries = 0
+        while retries < max_retries and running:
+            if os.path.exists(angles_file_path):
+                break
+            print("Python logger: Failed to find shared memory after multiple attempts")
+            retries += 1
+            time.sleep(1)
+            return
+        
+        # Open the file for memory mapping
+        angles_fd = os.open(angles_file_path, os.O_RDWR)
+        angles_mmap = mmap.mmap(angles_fd, 3 * 8, mmap.MAP_SHARED, mmap.PROT_WRITE | mmap.PROT_READ)
+        
+        print(f"Python logger: Created manual shared memory file at {angles_file_path}")
+        
+        # Now, when we want to update the angles, we can write directly to the mmap:
+        # Function to update the angles in shared memory
+        def update_angles_shared_memory(x, y, z):
+            angles_mmap.seek(0)
+            # Pack 3 doubles in little-endian format
+            angles_mmap.write(struct.pack('ddd', x, y, z))
+            angles_mmap.flush()
+        
+        # Use this function instead of updating angles_shared_array
+        # For example, replace the line that updates angles_shared_array with:
+        # update_angles_shared_memory(final_position[0], final_position[1], final_position[2])
+        
+    except Exception as e:
+        print(f"Python logger: Error creating manual shared memory: {e}")
 
     # Wait for the shared memory file to exist
+    retries = 0
     while retries < max_retries and running:
         if os.path.exists(shm_path):
             break
         print(f"Python logger: Waiting for shared memory to be created... ({retries+1}/{max_retries})")
         retries += 1
         time.sleep(1)
-    
-    if retries >= max_retries:
-        print("Python logger: Failed to find shared memory after multiple attempts")
-        return
     
     try:
         # Open the shared memory file
@@ -149,7 +185,7 @@ def main():
             ekf_logfile.write("kf_vx,kf_vy,kf_vz,kf_roll,kf_pitch,")
             ekf_logfile.write("gyro_roll_degrees,gyro_pitch_degrees,")
             ekf_logfile.write("accel_roll_degrees,accel_pitch_degrees,")
-            ekf_logfile.write("alpha_x,alpha_y,alpha_z")
+            ekf_logfile.write("alpha_x,alpha_y,alpha_z,")
             ekf_logfile.write("filtered_gyro_x,filtered_gyro_y,filtered_gyro_z\n")
             
             last_delta_t = -1
@@ -238,6 +274,10 @@ def main():
 
                     updated_height = sensor_data.baro_data.altitude-init_height
 
+                    # NOTE remove when no simulating
+                    final_state_vector[0] = final_state_vector[0] + 8
+                    updated_height = 15
+
                     a_payload_G, v_payload_G = kin.payload_lin_a_v(v_imu_G = [final_state_vector[0], final_state_vector[1], final_state_vector[2]],
                                         roll = final_state_vector[3],
                                         pitch = final_state_vector[4],
@@ -251,22 +291,15 @@ def main():
                                           a0 = [a_payload_G[0], a_payload_G[1], a_payload_G[2]], 
                                           v0 = [v_payload_G[0], v_payload_G[1], v_payload_G[2]],
                                           m = 0.1)
+
+                    print("x:", final_position[0], "y:", final_position[1], "z:", final_position[2])
                     
                     angles_dist = kin.inverse_kinematics_jacobian(*final_position)
 
-                    print("yaw: ", angles_dist[0], " pitch: ", angles_dist[1], " dist: ", angles_dist[2], "\n")
+                    # print("yaw: ", angles_dist[0], " pitch: ", angles_dist[1], " dist: ", angles_dist[2])
 
-                    for i in range(len(angles_dist)):
-                        if i < 3:  # Ensure we don't exceed array bounds
-                            angles_shared_array[i] = angles_dist[i]
-
-                    # print(f"Final state vector: {final_state_vector}")
-
-                    # print(f"vx: {update_state[0]:.2f}, vy: {update_state[1]:.2f}, vz: {update_state[2]:.2f} Roll: {roll_degrees:.2f} degrees, Pitch: {pitch_degrees:.2f} degrees")
-                    
-                    # print(f"gyro roll degrees: {gyro_roll_degrees:.2f}, accel_roll_degrees: {np.degrees(accel_roll):.2f}, gyro pitch degrees: {gyro_pitch_degrees:.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
-                    
-                    # print(f"accel_roll_degrees: {np.degrees(accel_roll):.2f}, accel_pitch_degrees: {np.degrees(accel_pitch):.2f}")
+                    # Update the shared memory with position or angles data (whichever is needed by transmit.py)
+                    update_angles_shared_memory(final_position[0], final_position[1], final_position[2])
                     
                     # Format all data as CSV row for sensor log
                     log_row = (
@@ -293,42 +326,26 @@ def main():
                         f"{update_state[0]:.4f},{update_state[1]:.4f},{update_state[2]:.4f},{roll_degrees:.4f},{pitch_degrees:.4f}," 
                         f"{gyro_roll_degrees:.4f},{gyro_pitch_degrees:.4f},"
                         f"{np.degrees(accel_roll):.4f},{np.degrees(accel_pitch):.4f},"
-                        f"{gyro_alpha_x:.4f}, {gyro_alpha_y:.4f}, {gyro_alpha_z:.4f}"
+                        f"{gyro_alpha_x:.4f},{gyro_alpha_y:.4f},{gyro_alpha_z:.4f},"
                         f"{gyro_x_lf:.4f},{gyro_y_lf:.4f},{gyro_z_lf:.4f}\n"
                     )
                     
                     ekf_logfile.write(ekf_log_row)
                     ekf_logfile.flush()  # Ensure data is written to disk
                     
-                    # Convert GPS UTC time to human-readable format (if it's in seconds since epoch)
-                    gps_time_str = "N/A"
-                    if sensor_data.gps_data.utc_time > 0:
-                        try:
-                            gps_time_str = datetime.datetime.fromtimestamp(
-                                sensor_data.gps_data.utc_time
-                            ).strftime('%H:%M:%S')
-                        except:
-                            gps_time_str = f"{sensor_data.gps_data.utc_time:.1f}"
-                    
-                    # Print summary to console
-                    # print(f"Logger: t={sensor_data.delta_t:.2f}s, "
-                    #       f"Baro: {sensor_data.baro_data.pressure:.1f}hPa/{sensor_data.baro_data.altitude:.1f}m, "
-                    #       f"GPS: ({sensor_data.gps_data.latitude:.5f}, {sensor_data.gps_data.longitude:.5f}, "
-                    #       f"{sensor_data.gps_data.height:.1f}m), "
-                    #       f"Distance: {sensor_data.distance:.2f}m")
-                    
                     last_delta_t = sensor_data.delta_t
                 
                 # Sleep a short while to avoid busy waiting
-                # time.sleep(0.001)
-        
-        # Clean up
-        shared_mem.close()
-        os.close(fd)
-        print(f"Python logger: Shutdown complete. Data saved to {log_filename} and {ekf_log_filename}")
+                time.sleep(0.001)
         
     except Exception as e:
         print(f"Python logger: Error: {str(e)}")
+    finally:
+        # Clean up resources
+        if 'shared_mem' in locals():
+            shared_mem.close()
+        if 'fd' in locals():
+            os.close(fd)
 
 if __name__ == "__main__":
     main()

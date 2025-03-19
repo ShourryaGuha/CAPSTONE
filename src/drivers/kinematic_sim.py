@@ -45,78 +45,148 @@ def simulate_freefall(h0, v0, a0, m, dt=0.01):
 
     g = 9.81
 
-    r = np.array([0.0, 0.0, h0])
+    r = np.array([0.0, 0.0, 0.0])
     v = np.array(v0)
     a = np.array(a0)
 
-    while r[2] > 0:
+    while r[2] < h0:
         Fd_x = np.interp(v[0], v_table, Fd_table)
         Fd_y = np.interp(v[1], v_table, Fd_table)
         Fd_z = np.interp(v[2], v_table, Fd_table)
 
-        a[0] = Fd_x / m
-        a[1] = Fd_y / m
-        a[2] = -g + (Fd_z / m)
+        a[0] = -Fd_x / m
+        a[1] = -Fd_y / m
+        a[2] = g - (Fd_z / m)
 
         v += a * dt
         r += v * dt
 
     return r  # Final position at impact
 
-
-### ✅ Inverse Kinematics for Gimbal
 def forward_kinematics(theta1, theta2, d):
-    """Computes the position of the gimbal end-effector given joint angles and extension."""
-    alpha = np.radians(theta1 + 90)
-    beta = np.radians(theta2 - 90)
+    """Forward kinematics exactly matching the MATLAB implementation."""
+    # Helper functions to match MATLAB's trig functions
 
-    x_FK = 1.16 * np.sin(alpha) - 15.3 * np.cos(alpha) + 63.06 * np.cos(alpha) * np.cos(beta) - np.cos(alpha) * np.sin(beta) * (d + 42)
-    y_FK = 63.06 * np.cos(beta) * np.sin(alpha) - 15.3 * np.sin(alpha) - 1.16 * np.cos(alpha) - np.sin(alpha) * np.sin(beta) * (d + 42)
-    z_FK = 63.06 * np.sin(beta) + np.cos(beta) * (d + 42) - 58.32
-
-    return np.array([x_FK, y_FK, z_FK])
-
+    #x = 1.16*sin(theta_1 + np.pi/2) - 15.3*cos(theta_1 + np.pi/2) + 63.06*cos(theta_1 + np.pi/2)*cos(theta_2 - np.pi/2) 
+    # - 1.0*cos(theta_1 + np.pi/2)*sin(theta_2 - np.pi/2)*(dist + 42.0)
+    x = (1.16*np.sin(theta1 + np.pi/2) - 15.3*np.cos(theta1+np.pi/2)
+         +63.06*np.sin(theta1+np.pi/2)*np.cos(theta2-np.pi/2)
+         -np.cos(theta1+np.pi/2)*np.sin(theta2-np.pi/2)*(d+42))
+    
+    #y = 63.06*cos(theta_2 - np.pi/2)*sin(theta_1 + np.pi/2) - 15.3*sin(theta_1 + np.pi/2) - 1.16*cos(theta_1 + np.pi/2) - 
+    # 1.0*sin(theta_1 + np.pi/2)*sin(theta_2 - np.pi/2)*(dist + 42.0)
+    y = (63.06*np.cos(theta2-np.pi/2)*np.sin(theta1+np.pi/2)-15.3*np.sin(theta1+np.pi/2)
+         -1.16*np.cos(theta1+np.pi/2)-np.sin(theta1+np.pi/2)*np.sin(theta2-np.pi/2)*(d+42))
+    
+    #63.06*sin(theta_2 - np.pi/2) + 1.0*cos(theta_2 - np.pi/2)*(dist + 42.0) - 58.32
+    z = 63.06*np.sin(theta2-np.pi/2)+np.cos(theta2-np.pi/2)*(d+42)-58.32
+    
+    return np.array([x, y, z])
 
 def calculate_jacobian(theta1, theta2, d):
-    """Computes the Jacobian matrix using numerical differentiation."""
-    delta = 1e-6
+    """Compute the Jacobian matrix exactly as in the MATLAB code."""
+    # Helper functions to match MATLAB's trig functions
+    sind = lambda angle: np.sin(np.radians(angle))
+    cosd = lambda angle: np.cos(np.radians(angle))
+    
+    # Create the Jacobian matrix with exact expressions from MATLAB
     J = np.zeros((3, 3))
-
-    for i, param in enumerate([theta1, theta2, d]):
-        params = [theta1, theta2, d]
-        params[i] += delta
-        pos1 = forward_kinematics(*params)
-        params[i] -= 2 * delta
-        pos2 = forward_kinematics(*params)
-        J[:, i] = (pos1 - pos2) / (2 * delta)
-
+    
+    # First row (exact copy from MATLAB)
+    J[0, 0] = 1.16 * cosd(theta1 + 90) + 15.3 * sind(theta1 + 90) - 63.06 * sind(theta1 + 90) * cosd(theta2 - 90) + sind(theta1 + 90) * sind(theta2 - 90) * (d + 42)
+    J[0, 1] = -63.06 * cosd(theta1 + 90) * sind(theta2 - 90) - cosd(theta1 + 90) * cosd(theta2 - 90) * (d + 42)
+    J[0, 2] = -cosd(theta1 + 90) * sind(theta2 - 90)
+    
+    # Second row (exact copy from MATLAB)
+    J[1, 0] = 63.06 * cosd(theta2 - 90) * cosd(theta1 + 90) - 15.3 * cosd(theta1 + 90) - 1.16 * sind(theta1 + 90) - cosd(theta1 + 90) * sind(theta2 - 90) * (d + 42)
+    J[1, 1] = -63.06 * sind(theta1 + 90) * sind(theta2 - 90) - sind(theta1 + 90) * cosd(theta2 - 90) * (d + 42)
+    J[1, 2] = -sind(theta1 + 90) * sind(theta2 - 90)
+    
+    # Third row (exact copy from MATLAB)
+    J[2, 0] = 0
+    J[2, 1] = 63.06 * cosd(theta2 - 90) - sind(theta2 - 90) * (d + 42)
+    J[2, 2] = cosd(theta2 - 90)
+    
     return J
 
-
-def inverse_kinematics_jacobian(x0, y0, z0, initial_guess=(0, 0, 0)):
-    """Solves for the gimbal angles and extension using the Jacobian method."""
-    theta1, theta2, d = initial_guess
-    max_iterations = 100
-    tolerance = 1e-6
-    damping_factor = 0.5
-
-    for _ in range(max_iterations):
-        pos_current = forward_kinematics(theta1, theta2, d)
-        error = np.array([x0, y0, z0]) - pos_current
-
-        if np.linalg.norm(error) < tolerance:
-            break
-
+def inverse_kinematics_jacobian(x_target, y_target, z_target, initial_guess=None):
+    """Solves for the joint variables using the Jacobian method with stability enhancements."""
+    # Use the same initial guess as MATLAB for consistency
+    if initial_guess is None:
+        theta1 = 0.0  # Initial yaw in degrees
+        theta2 = 0.0  # Initial pitch in degrees
+        d = 50.0      # Initial prismatic displacement in mm
+    else:
+        theta1, theta2, d = initial_guess
+    
+    # Iteration parameters exactly matching MATLAB
+    max_iters = 1000
+    tol = 1e-4
+    alpha = 0.1  # Step size
+    
+    # For debugging/comparison with MATLAB
+    iteration_history = []
+    
+    for iter in range(max_iters):
+        # Forward kinematics to get current position
+        current_pos = forward_kinematics(theta1, theta2, d)
+        x, y, z = current_pos
+        
+        # Compute error
+        error = np.array([x_target - x, y_target - y, z_target - z])
+        
+        # Check for convergence - use same norm calculation as MATLAB
+        error_norm = np.linalg.norm(error)
+        # if error_norm < tol:
+        #     print(f'Converged in {iter+1} iterations.')
+        #     break
+        
+        # Compute Jacobian
         J = calculate_jacobian(theta1, theta2, d)
-        J_pseudo_inv = np.linalg.pinv(J + damping_factor * np.eye(3))
-        delta_q = J_pseudo_inv @ error
-
-        theta1 += delta_q[0]
-        theta2 += delta_q[1]
-        d += delta_q[2]
-
-    return theta1, theta2, d
-
+        
+        # Improved numerical stability for pseudo-inverse calculation
+        # Using SVD decomposition with conditioning similar to MATLAB's pinv
+        U, S, Vh = np.linalg.svd(J, full_matrices=False)
+        
+        # Apply conditioning similar to MATLAB's pinv (handles small singular values)
+        rcond = np.finfo(float).eps * max(J.shape) * np.max(S)
+        S_inv = np.array([1/s if s > rcond else 0 for s in S])
+        
+        # Calculate pseudo-inverse
+        J_pinv = (Vh.T * S_inv) @ U.T
+        
+        # Compute update
+        delta = alpha * J_pinv @ error
+        
+        # Update joint variables
+        theta1_new = theta1 + delta[0]
+        theta2_new = theta2 + delta[1]
+        d_new = d + delta[2]
+        
+        # Store for debugging
+        iteration_history.append({
+            'iter': iter+1,
+            'theta1': theta1_new,
+            'theta2': theta2_new,
+            'd': d_new,
+            'error': error_norm
+        })
+        
+        # Update variables
+        theta1 = theta1_new
+        theta2 = theta2_new
+        d = d_new
+        
+        # Print progress to match MATLAB output
+        # print(f'Iteration {iter+1}: theta1 = {theta1:.2f}, theta2 = {theta2:.2f}, d = {d:.2f}')
+    
+    # # Final solution
+    # print('\nFinal Solution:')
+    # print(f'theta1 = {theta1:.2f} degrees')
+    # print(f'theta2 = {theta2:.2f} degrees')
+    # print(f'd = {d:.2f} mm')
+    
+    return theta1, theta2, d, iteration_history
 
 ### ✅ Example Usage (Commented Out)
 """
